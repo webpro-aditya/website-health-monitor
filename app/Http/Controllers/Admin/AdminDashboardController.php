@@ -15,10 +15,37 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
+        $users = User::where('role', '!=', 'admin')->withCount('domains')->with(['subscriptions' => function($q) {
+            $q->where('status', 'active');
+        }])->get();
+
+        $plansMap = [
+            env('RAZORPAY_PLAN_STARTER_MONTHLY') => 'Starter Monthly',
+            env('RAZORPAY_PLAN_STARTER_YEARLY') => 'Starter Yearly',
+            env('RAZORPAY_PLAN_PRO_MONTHLY') => 'Pro Monthly',
+            env('RAZORPAY_PLAN_PRO_YEARLY') => 'Pro Yearly',
+            env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY') => 'Enterprise Monthly',
+            env('RAZORPAY_PLAN_ENTERPRISE_YEARLY') => 'Enterprise Yearly',
+        ];
+
+        $users->map(function ($user) use ($plansMap) {
+            $activeSub = $user->subscriptions->first();
+            if ($activeSub) {
+                $user->plan_name = $plansMap[$activeSub->plan_name] ?? 'Custom Plan';
+            } elseif ($user->trial_ends_at && $user->trial_ends_at->isFuture()) {
+                $user->plan_name = 'Free Trial';
+            } elseif ($user->role === 'admin') {
+                $user->plan_name = 'Admin';
+            } else {
+                $user->plan_name = 'No Plan';
+            }
+            return $user;
+        });
+
         return Inertia::render('Admin/Dashboard', [
-            'totalUsers' => User::count(),
+            'totalUsers' => User::where('role', '!=', 'admin')->count(),
             'totalDomains' => DomainUrl::count(),
-            'users' => User::withCount('domains')->get(),
+            'users' => $users,
             'emailConfig' => EmailConfig::first() ?? new EmailConfig(),
             'smsConfig' => SmsConfig::first() ?? new SmsConfig(),
         ]);

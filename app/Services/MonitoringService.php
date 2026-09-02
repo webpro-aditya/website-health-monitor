@@ -3,88 +3,59 @@
 namespace App\Services;
 
 use App\Models\DomainUrl;
-use App\Models\Tracking;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class MonitoringService
 {
-    public function checkDomains()
-    {
-        $domains = DomainUrl::with('user')
-            ->where('status', 'enabled')
-            ->whereHas('user', function ($q) {
-                $q->where('is_active', true);
-            })
-            ->get();
-
-        foreach ($domains as $domain) {
-            $this->checkDomain($domain);
-        }
-    }
-
-    protected function checkDomain(DomainUrl $domain)
+    /**
+     * Perform the raw HTTP check and return the result DTO.
+     */
+    public function performHttpCheck(DomainUrl $domain, int $timeout = 10): MonitoringResult
     {
         $start = microtime(true);
         $isUp = false;
+        $httpStatusCode = null;
+        $errorMessage = null;
         
         try {
-            $response = Http::timeout(10)->get($domain->url);
+            $response = Http::timeout($timeout)->get($domain->url);
+            $httpStatusCode = $response->status();
             $isUp = $response->successful();
         } catch (\Exception $e) {
-            Log::error("Health check failed for {$domain->url}: " . $e->getMessage());
+            $errorMessage = $e->getMessage();
+            Log::error("Health check failed for {$domain->url}: " . $errorMessage);
         }
 
         $durationMs = round((microtime(true) - $start) * 1000);
-        
-        $domain->update([
-            'domain_status' => $isUp,
-            'response_time' => $durationMs,
-            'last_checked' => now(),
-        ]);
 
-        $tracking = Tracking::firstOrNew(['url' => $domain->url]);
-        
-        if (!$isUp && $tracking->last_status) {
-            $tracking->down_since = now();
-            
-            // Log Downtime Alert to Queue
-            $message = "ALERT: Your domain {$domain->domain_name} ({$domain->url}) is DOWN.";
-            \App\Models\NotificationQueue::create([
-                'user_id' => $domain->user_id,
-                'domain_url_id' => $domain->id,
-                'type' => 'email',
-                'message' => $message,
-            ]);
-            \App\Models\NotificationQueue::create([
-                'user_id' => $domain->user_id,
-                'domain_url_id' => $domain->id,
-                'type' => 'sms',
-                'message' => $message,
-            ]);
-            
-        } elseif ($isUp && !$tracking->last_status && $tracking->exists) {
-            $tracking->down_since = null;
-            
-            // Log Uptime Alert to Queue
-            $message = "RESOLVED: Your domain {$domain->domain_name} ({$domain->url}) is UP again.";
-            \App\Models\NotificationQueue::create([
-                'user_id' => $domain->user_id,
-                'domain_url_id' => $domain->id,
-                'type' => 'email',
-                'message' => $message,
-            ]);
-            \App\Models\NotificationQueue::create([
-                'user_id' => $domain->user_id,
-                'domain_url_id' => $domain->id,
-                'type' => 'sms',
-                'message' => $message,
-            ]);
+        return new MonitoringResult($isUp, (int)$durationMs, $httpStatusCode, $errorMessage);
+    }
+
+    /**
+     * Evaluate the new state against the old state using thresholds.
+     * Returns 'down', 'recovered', or null if no state change is confirmed.
+     */
+    public function evaluateState(DomainUrl $domain, MonitoringResult $result): ?string
+    {
+        if (!$result->isUp) {
+            $domain->consecutive_failures++;
+            $domain->consecutive_successes = 0;
+
+            // Confirm DOWN if threshold met and wasn't already down
+            if ($domain->consecutive_failures >= 3 && $domain->current_status !== 'down') {
+                return 'down';
+            }
+        } else {
+            $domain->consecutive_successes++;
+            $domain->consecutive_failures = 0;
+
+            // Confirm UP if threshold met and was down
+            if ($domain->consecutive_successes >= 2 && $domain->current_status === 'down') {
+                return 'recovered';
+            }
         }
-        
-        $tracking->last_status = $isUp;
-        $tracking->last_checked = now();
-        $tracking->response_time_ms = $durationMs;
-        $tracking->save();
+
+        return null;
     }
 }

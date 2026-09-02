@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'trial_days' => env('TRIAL_DAYS', 14),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

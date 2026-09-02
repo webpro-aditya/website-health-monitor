@@ -33,11 +33,36 @@ class DomainController extends Controller
             ? json_decode($user->advanced_settings, true) 
             : null;
 
+        $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
+        $planDetails = [
+            'name' => 'Free Trial',
+            'expiry' => $user->trial_ends_at ? $user->trial_ends_at->format('M d, Y') : 'N/A'
+        ];
+
+        if ($activeSubscription) {
+            $plansMap = [
+                env('RAZORPAY_PLAN_STARTER_MONTHLY') => 'Starter Monthly',
+                env('RAZORPAY_PLAN_STARTER_YEARLY') => 'Starter Yearly',
+                env('RAZORPAY_PLAN_PRO_MONTHLY') => 'Pro Monthly',
+                env('RAZORPAY_PLAN_PRO_YEARLY') => 'Pro Yearly',
+                env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY') => 'Enterprise Monthly',
+                env('RAZORPAY_PLAN_ENTERPRISE_YEARLY') => 'Enterprise Yearly',
+            ];
+            $planDetails['name'] = $plansMap[$activeSubscription->plan_name] ?? 'Custom Plan';
+            try {
+                $rzpSub = $gateway->getSubscription($activeSubscription->razorpay_subscription_id);
+                if (isset($rzpSub['current_end'])) {
+                    $planDetails['expiry'] = date('M d, Y', $rzpSub['current_end']);
+                }
+            } catch (\Exception $e) {}
+        }
+
         return Inertia::render('Dashboard', [
             'domains' => $domains,
             'initialAlertEmails' => $alertEmails,
             'initialAlertPhones' => $alertPhones,
-            'initialAdvancedSettings' => $advancedSettings
+            'initialAdvancedSettings' => $advancedSettings,
+            'subscriptionDetails' => $planDetails
         ]);
     }
 

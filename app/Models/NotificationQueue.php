@@ -13,5 +13,24 @@ class NotificationQueue extends Model
         'status',
         'message',
         'error_log',
+        'event_type',
+        'recipient',
+        'retry_count',
+        'sent_at',
+        'provider_response'
     ];
+
+    protected $casts = [
+        'sent_at' => 'datetime',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function domainUrl()
+    {
+        return $this->belongsTo(DomainUrl::class);
+    }
 }

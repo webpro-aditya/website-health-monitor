@@ -18,6 +18,9 @@ class SendSmsJob implements ShouldQueue
 
     public $notification;
 
+    public $tries = 3;
+    public $backoff = [30, 60, 120];
+
     public function __construct(NotificationQueue $notification)
     {
         $this->notification = $notification;
@@ -30,44 +33,50 @@ class SendSmsJob implements ShouldQueue
             if (!$config || !$config->is_active) {
                 $this->notification->update([
                     'status' => 'failed',
-                    'error_log' => 'SMS config is inactive or not found.'
+                    'error_log' => 'SMS config is inactive or not found.',
+                    'provider_response' => 'Config inactive',
                 ]);
                 return;
             }
 
-            $user = $this->notification->user;
-            if (!$user || empty($user->phone)) {
+            $recipient = $this->notification->recipient;
+            if (!$recipient) {
                 $this->notification->update([
                     'status' => 'failed',
-                    'error_log' => 'User phone number not found.'
+                    'error_log' => 'Recipient phone number not found.'
                 ]);
                 return;
             }
 
-            // A generic HTTP API integration based on SmsConfig.
-            // Usually, APIs use POST and JSON, or GET with query params.
-            // Let's assume a standard POST request for sending SMS.
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $config->api_key,
                 'Content-Type' => 'application/json'
             ])->post($config->api_url, [
-                'to' => $user->phone, // Assumes user has a phone field
+                'to' => $recipient,
                 'sender' => $config->sender_id,
                 'message' => $this->notification->message,
             ]);
 
             if ($response->successful()) {
-                $this->notification->update(['status' => 'sent']);
+                $this->notification->update([
+                    'status' => 'sent',
+                    'sent_at' => now(),
+                    'provider_response' => $response->body()
+                ]);
             } else {
                 $this->notification->update([
                     'status' => 'failed',
-                    'error_log' => 'API Error: ' . $response->body()
+                    'error_log' => 'API Error: ' . $response->status(),
+                    'provider_response' => $response->body(),
+                    'retry_count' => $this->attempts(),
                 ]);
+                throw new \Exception('API Error: ' . $response->body());
             }
         } catch (\Exception $e) {
             $this->notification->update([
                 'status' => 'failed',
-                'error_log' => $e->getMessage()
+                'error_log' => $e->getMessage(),
+                'retry_count' => $this->attempts(),
             ]);
             throw $e;
         }

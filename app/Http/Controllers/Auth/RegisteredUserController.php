@@ -21,7 +21,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', ['trialDays' => config('app.trial_days')]);
     }
 
     /**
@@ -35,7 +35,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'plan' => 'nullable|string|in:starter_monthly,starter_yearly,pro_monthly,pro_yearly,enterprise_monthly,enterprise_yearly'
+            'plan' => 'nullable|string|in:free_trial,starter_monthly,starter_yearly,pro_monthly,pro_yearly,enterprise_monthly,enterprise_yearly'
         ]);
 
         $user = User::create([

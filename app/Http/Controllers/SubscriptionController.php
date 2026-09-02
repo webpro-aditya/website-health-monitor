@@ -40,7 +40,7 @@ class SubscriptionController extends Controller
         } elseif ($user->trial_ends_at && $user->trial_ends_at->isFuture()) {
             $subscriptionDetails = [
                 'type' => 'trial',
-                'plan' => 'Pro (Trial)',
+                'plan' => 'Free Trial',
                 'price' => 'Free',
                 'expiry' => $user->trial_ends_at->format('F j, Y, g:i a'),
                 'features' => $this->getFeaturesForPlan('pro')
@@ -48,7 +48,17 @@ class SubscriptionController extends Controller
         }
 
         return Inertia::render('Subscription/Index', [
-            'subscriptionDetails' => $subscriptionDetails
+            'subscriptionDetails' => $subscriptionDetails,
+            'razorpayKey' => env('RAZORPAY_KEY_ID'),
+            'plans' => [
+                'starter_monthly' => env('RAZORPAY_PLAN_STARTER_MONTHLY'),
+                'starter_yearly' => env('RAZORPAY_PLAN_STARTER_YEARLY'),
+                'pro_monthly' => env('RAZORPAY_PLAN_PRO_MONTHLY'),
+                'pro_yearly' => env('RAZORPAY_PLAN_PRO_YEARLY'),
+                'enterprise_monthly' => env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY'),
+                'enterprise_yearly' => env('RAZORPAY_PLAN_ENTERPRISE_YEARLY'),
+            ],
+            'currentPlanId' => $activeSubscription ? $activeSubscription->plan_name : 'trial'
         ]);
     }
 

@@ -18,6 +18,10 @@ class PaymentController extends Controller
 
     public function checkout(Request $request, PaymentGatewayInterface $gateway)
     {
+        if ($request->query('plan') === 'free_trial') {
+            return $this->skipPayment($request);
+        }
+
         $user = $request->user();
         $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
         
@@ -40,7 +44,7 @@ class PaymentController extends Controller
         }
 
         return Inertia::render('Payment/Checkout', [
-            'trialDays' => (int) env('TRIAL_DAYS', 3),
+            'trialDays' => (int) config('app.trial_days', 14),
             'razorpayKey' => env('RAZORPAY_KEY_ID'),
             'plans' => [
                 'starter_monthly' => env('RAZORPAY_PLAN_STARTER_MONTHLY'),
@@ -61,7 +65,7 @@ class PaymentController extends Controller
     public function skipPayment(Request $request)
     {
         $user = $request->user();
-        $user->trial_ends_at = now()->addDays((int) env('TRIAL_DAYS', 3));
+        $user->trial_ends_at = now()->addDays((int) config('app.trial_days', 14));
         $user->save();
 
         return redirect()->route('dashboard');

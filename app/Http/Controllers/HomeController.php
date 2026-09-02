@@ -10,7 +10,7 @@ class HomeController extends Controller
     public function index()
     {
         return Inertia::render('Home', [
-            'trialDays' => env('TRIAL_DAYS', 14)
+            'trialDays' => config('app.trial_days')
         ]);
     }
 }

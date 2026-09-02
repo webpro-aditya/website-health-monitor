@@ -31,10 +31,33 @@ class DomainRepository implements DomainRepositoryInterface
 
     public function save(string $name, string $url, string $status, int $userId, ?int $id = null)
     {
-        return DomainUrl::updateOrCreate(
+        $interval = 900; // default 15min
+        if (!$id) {
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                $sub = $user->subscriptions()->where('status', 'active')->first();
+                if ($sub) {
+                    if (str_contains(strtolower($sub->plan_name), 'starter')) {
+                        $interval = 300; // 5min
+                    } elseif (str_contains(strtolower($sub->plan_name), 'pro') || str_contains(strtolower($sub->plan_name), 'enterprise')) {
+                        $interval = 60; // 1min
+                    }
+                }
+            }
+        }
+
+        $domain = DomainUrl::updateOrCreate(
             ['id' => $id, 'user_id' => $userId],
             ['domain_name' => $name, 'url' => $url, 'status' => $status]
         );
+
+        if (!$id) {
+            $domain->check_interval = $interval;
+            $domain->next_check_at = now();
+            $domain->save();
+        }
+
+        return $domain;
     }
 
     public function delete(int $id, int $userId)

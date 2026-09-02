@@ -225,7 +225,7 @@ const CountryCodeSelector = ({ value, onChange, countries }) => {
     );
 };
 
-export default function Dashboard({ domains, initialAlertEmails = [], initialAlertPhones = [], initialAdvancedSettings }) {
+export default function Dashboard({ domains, initialAlertEmails = [], initialAlertPhones = [], initialAdvancedSettings, subscriptionDetails }) {
   const { auth } = usePage().props;
   const user = auth.user;
 
@@ -503,6 +503,23 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
               </div>
             </div>
             <div className="whm-header-actions">
+              <Link href={route('subscription.index')} className="whm-plan-badge" style={{
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                  color: 'var(--accent)',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  textDecoration: 'none',
+                  cursor: 'pointer'
+              }}>
+                <IconZap size={14} /> {subscriptionDetails?.name || 'Free Trial'}
+                <span style={{opacity: 0.7, fontSize: '11px', fontWeight: '400', marginLeft: '4px'}}>Exp: {subscriptionDetails?.expiry || 'N/A'}</span>
+              </Link>
               <div className="whm-user-chip">
                 <div className="whm-user-avatar">{user.name ? user.name[0].toUpperCase() : '?'}</div>
                 <span className="whm-user-name">{user.name}</span>
