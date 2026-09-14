@@ -449,7 +449,7 @@ body::before {
             <main>
                 <section className="hero">
                     <h1>Monitor your websites with enterprise reliability.</h1>
-                    <p>Get instant alerts via WhatsApp, SMS, and Email when your site goes down. Trusted by over 10,000 developers worldwide.</p>
+                    <p>Get instant alerts via SMS and Email when your site goes down. Trusted by over 10,000 developers worldwide.</p>
                     
                     <div className="hero-actions">
                         {auth.user ? (
@@ -534,7 +534,7 @@ body::before {
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                             </div>
                             <h3>Instant Alerts</h3>
-                            <p>Receive notifications via Email, SMS, or WhatsApp within seconds of a detected outage.</p>
+                            <p>Receive notifications via Email or SMS within seconds of a detected outage.</p>
                         </div>
                         <div className="feature-card">
                             <div className="feature-icon">
@@ -579,7 +579,7 @@ body::before {
                         <div className="timeline-step">
                             <div className="timeline-number">2</div>
                             <h3>Set Alerts</h3>
-                            <p>Configure Email, SMS, or WhatsApp notifications.</p>
+                            <p>Configure Email or SMS notifications.</p>
                         </div>
                         <div className="timeline-step">
                             <div className="timeline-number">3</div>
@@ -638,8 +638,7 @@ body::before {
                             <ul className="pricing-features">
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 25 domains</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> 1-minute checks</li>
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> SMS & WhatsApp alerts</li>
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> API Access</li>
+                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> SMS alerts</li>
                             </ul>
                             <Link href={route('register') + `?plan=pro_${billingCycle}`} className="btn-primary">Subscribe</Link>
                         </div>
@@ -649,7 +648,7 @@ body::before {
                             <ul className="pricing-features">
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited domains</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> 30-second checks</li>
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Advanced Webhooks</li>
+                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Custom SLA</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Priority Support</li>
                             </ul>
                             <Link href={route('register') + `?plan=enterprise_${billingCycle}`} className="btn-secondary">Subscribe</Link>

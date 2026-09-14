@@ -54,4 +54,26 @@ class User extends Authenticatable
             'trial_ends_at' => 'datetime',
         ];
     }
+
+    public function getMaxDomainsLimit(): int
+    {
+        $limit = 2; // Default for trial/no active plan
+        $sub = $this->relationLoaded('subscriptions') 
+            ? $this->subscriptions->firstWhere('status', 'active')
+            : $this->subscriptions()->where('status', 'active')->first();
+            
+        if ($sub) {
+            $planId = $sub->plan_name; // This holds the Razorpay plan_id
+
+            if ($planId === env('RAZORPAY_PLAN_STARTER_MONTHLY') || $planId === env('RAZORPAY_PLAN_STARTER_YEARLY')) {
+                $limit = 5;
+            } elseif ($planId === env('RAZORPAY_PLAN_PRO_MONTHLY') || $planId === env('RAZORPAY_PLAN_PRO_YEARLY')) {
+                $limit = 25;
+            } elseif ($planId === env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY') || $planId === env('RAZORPAY_PLAN_ENTERPRISE_YEARLY')) {
+                $limit = PHP_INT_MAX;
+            }
+        }
+        
+        return $limit;
+    }
 }

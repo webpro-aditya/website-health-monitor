@@ -86,9 +86,11 @@ class NotificationDispatcher
             SendSmsJob::dispatch($notification)->onQueue('sms');
         }
 
-        // Update last notified time
+        // Update last notified time on the in-memory model.
+        // Important: Do NOT use $domain->update() here because CheckDomainJob::handle()
+        // calls $domain->save() after this, which would overwrite the DB value.
         if (count($emails) > 0 || count($phones) > 0) {
-            $domain->update(['last_notified_at' => now()]);
+            $domain->last_notified_at = now();
         }
     }
 }

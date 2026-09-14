@@ -70,6 +70,12 @@ class DomainController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        
+        if ($user->domains()->count() >= $user->getMaxDomainsLimit()) {
+            return back()->withErrors(['url' => 'You have reached the maximum number of domains allowed on your current plan. Please upgrade to add more.']);
+        }
+
         $request->merge(['url' => rtrim($request->url, '/')]);
         
         $request->validate([
@@ -90,7 +96,7 @@ class DomainController extends Controller
             $request->domain_name,
             $request->url,
             'enabled',
-            $request->user()->id
+            $user->id
         );
 
         return back()->with('success', 'Domain added successfully.');

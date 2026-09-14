@@ -442,7 +442,9 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
   const statusMap = {
     UP: { cls: 'whm-badge-up', label: 'Operational' },
     DOWN: { cls: 'whm-badge-down', label: 'Down' },
+    PENDING: { cls: 'whm-badge-pending', label: 'Pending' },
     DISABLED: { cls: 'whm-badge-disabled', label: 'Disabled' },
+    FROZEN: { cls: 'whm-badge-disabled', label: 'Frozen (Limit Reached)' },
   };
 
   return (
@@ -725,21 +727,8 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
                         </Section>
                       );
                     } else if (sectionId === 'adv') {
-                      sectionContent = (
-                        <Section title="Advanced Monitoring Settings" icon={<IconSettings size={20} />} open={secAdv} onToggle={() => setSecAdv(!secAdv)}>
-                          <div className="whm-settings-grid">
-                            {settings.map((s, i) => (
-                              <div className="whm-setting-row" key={i}>
-                                <div className="whm-setting-info">
-                                  <span className="whm-setting-icon">{s.icon}</span>
-                                  <span className="whm-setting-label">{s.label}</span>
-                                </div>
-                                <Toggle checked={s.on} onChange={() => toggleSetting(i)} />
-                              </div>
-                            ))}
-                          </div>
-                        </Section>
-                      );
+                      // Hiding Advanced Monitoring Settings for now
+                      sectionContent = null;
                     }
 
                     if (!sectionContent) return null;
@@ -1376,6 +1365,8 @@ const DASHBOARD_CSS = `
 .whm-badge-up::before { background: var(--success); box-shadow: 0 0 6px var(--success); }
 .whm-badge-down { color: var(--danger); }
 .whm-badge-down::before { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+.whm-badge-pending { color: #f59e0b; }
+.whm-badge-pending::before { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 .whm-badge-disabled { color: var(--text-tertiary); }
 .whm-badge-disabled::before { background: var(--text-tertiary); }
 .whm-badge-disabled::before { background: #94a3b8; }
@@ -1627,6 +1618,7 @@ const DASHBOARD_CSS = `
 .whm-root:not([data-theme="light"]) .whm-setting-row:hover { border-color: rgba(99,102,241,0.15); box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
 .whm-root:not([data-theme="light"]) .whm-badge-up { box-shadow: 0 0 8px rgba(16,185,129,0.15); }
 .whm-root:not([data-theme="light"]) .whm-badge-down { box-shadow: 0 0 8px rgba(239,68,68,0.15); }
+.whm-root:not([data-theme="light"]) .whm-badge-pending { box-shadow: 0 0 8px rgba(245,158,11,0.15); }
 
 /* ── SWEETALERT2 OVERRIDES ── */
 .whm-swal-popup {

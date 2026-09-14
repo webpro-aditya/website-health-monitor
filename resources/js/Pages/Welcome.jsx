@@ -2,30 +2,31 @@ import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
 export default function Welcome({ auth }) {
-    const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(true);
 
-    useEffect(() => {
-        const saved = localStorage.getItem('whm-theme');
-        if (saved === 'light') {
-            setDark(false);
-            document.documentElement.setAttribute('data-theme', 'light');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-    }, []);
+  useEffect(() => {
+    const saved = localStorage.getItem('whm-theme');
+    if (saved === 'light') {
+      setDark(false);
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
 
-    const toggleTheme = () => {
-        const next = !dark;
-        setDark(next);
-        document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-        localStorage.setItem('whm-theme', next ? 'dark' : 'light');
-    };
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
+    localStorage.setItem('whm-theme', next ? 'dark' : 'light');
+  };
 
-    return (
-        <>
-            <Head title="Website Health Monitor - Enterprise Uptime" />
-            
-            <style dangerouslySetInnerHTML={{__html: `
+  return (
+    <>
+      <Head title="Website Health Monitor - Enterprise Uptime" />
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
 :root {
   --c-bg: #f8fafc;
   --c-bg-nav: rgba(248, 250, 252, 0.8);
@@ -335,94 +336,94 @@ body::before {
 }
 `}} />
 
-            <nav className="nav">
-                <Link href="/" className="nav-logo">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Website Health Monitor
-                </Link>
-                
-                <div className="nav-links">
-                    <a href="#" className="nav-link">Features</a>
-                    <a href="#" className="nav-link">Pricing</a>
-                    <a href="#" className="nav-link">Docs</a>
-                    
-                    {auth.user ? (
-                        <Link href={route('dashboard')} className="btn-primary">Go to Dashboard →</Link>
-                    ) : (
-                        <>
-                            <Link href={route('login')} className="nav-link">Sign In</Link>
-                            <Link href={route('register')} className="btn-primary">Start Free Trial</Link>
-                        </>
-                    )}
-                    
-                    <button type="button" className="theme-toggle" onClick={toggleTheme}>
-                        {dark ? '☀️' : '🌙'}
-                    </button>
+      <nav className="nav">
+        <Link href="/" className="nav-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          Website Health Monitor
+        </Link>
+
+        <div className="nav-links">
+          <a href="#" className="nav-link">Features</a>
+          <a href="#" className="nav-link">Pricing</a>
+          <a href="#" className="nav-link">Docs</a>
+
+          {auth.user ? (
+            <Link href={route('dashboard')} className="btn-primary">Go to Dashboard →</Link>
+          ) : (
+            <>
+              <Link href={route('login')} className="nav-link">Sign In</Link>
+              <Link href={route('register')} className="btn-primary">Start Free Trial</Link>
+            </>
+          )}
+
+          <button type="button" className="theme-toggle" onClick={toggleTheme}>
+            {dark ? '☀️' : '🌙'}
+          </button>
+        </div>
+      </nav>
+
+      <main>
+        <section className="hero">
+          <h1>Monitor your websites with enterprise reliability.</h1>
+          <p>Get instant alerts via WhatsApp, SMS, and Email when your site goes down. Trusted by over 10,000 developers worldwide.</p>
+
+          <div className="hero-actions">
+            {auth.user ? (
+              <Link href={route('dashboard')} className="btn-primary">Go to Dashboard</Link>
+            ) : (
+              <>
+                <Link href={route('register')} className="btn-primary">Start your 14-day free trial</Link>
+                <a href="#pricing" className="btn-secondary">View Pricing</a>
+              </>
+            )}
+          </div>
+          <div className="hero-note">No credit card required. Cancel anytime.</div>
+        </section>
+
+        <section className="mockup-wrapper">
+          <div className="mockup">
+            <div className="mockup-header">
+              <div className="mockup-dot red"></div>
+              <div className="mockup-dot yellow"></div>
+              <div className="mockup-dot green"></div>
+            </div>
+            <div className="mockup-body">
+              <div className="mockup-sidebar">
+                <div className="mockup-nav-item active"></div>
+                <div className="mockup-nav-item"></div>
+                <div className="mockup-nav-item"></div>
+                <div className="mockup-nav-item"></div>
+              </div>
+              <div className="mockup-content">
+                <div className="mockup-chart">
+                  <h2>100% Uptime</h2>
                 </div>
-            </nav>
-
-            <main>
-                <section className="hero">
-                    <h1>Monitor your websites with enterprise reliability.</h1>
-                    <p>Get instant alerts via WhatsApp, SMS, and Email when your site goes down. Trusted by over 10,000 developers worldwide.</p>
-                    
-                    <div className="hero-actions">
-                        {auth.user ? (
-                            <Link href={route('dashboard')} className="btn-primary">Go to Dashboard</Link>
-                        ) : (
-                            <>
-                                <Link href={route('register')} className="btn-primary">Start your 14-day free trial</Link>
-                                <a href="#pricing" className="btn-secondary">View Pricing</a>
-                            </>
-                        )}
-                    </div>
-                    <div className="hero-note">No credit card required. Cancel anytime.</div>
-                </section>
-
-                <section className="mockup-wrapper">
-                    <div className="mockup">
-                        <div className="mockup-header">
-                            <div className="mockup-dot red"></div>
-                            <div className="mockup-dot yellow"></div>
-                            <div className="mockup-dot green"></div>
-                        </div>
-                        <div className="mockup-body">
-                            <div className="mockup-sidebar">
-                                <div className="mockup-nav-item active"></div>
-                                <div className="mockup-nav-item"></div>
-                                <div className="mockup-nav-item"></div>
-                                <div className="mockup-nav-item"></div>
-                            </div>
-                            <div className="mockup-content">
-                                <div className="mockup-chart">
-                                    <h2>100% Uptime</h2>
-                                </div>
-                                <div className="mockup-logs">
-                                    <div className="mockup-log">
-                                        <div className="mockup-log-icon">✓</div>
-                                        <div className="mockup-log-text" style={{width: '60%'}}></div>
-                                    </div>
-                                    <div className="mockup-log">
-                                        <div className="mockup-log-icon">✓</div>
-                                        <div className="mockup-log-text" style={{width: '40%'}}></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            <footer className="footer">
-                <div className="footer-title">Trusted by Engineering Teams At</div>
-                <div className="logos-row">
-                    <span>TECHCORP</span>
-                    <span>ACME INC</span>
-                    <span>CLOUDNET</span>
-                    <span>DATAFLOW</span>
-                    <span>APEX</span>
+                <div className="mockup-logs">
+                  <div className="mockup-log">
+                    <div className="mockup-log-icon">✓</div>
+                    <div className="mockup-log-text" style={{ width: '60%' }}></div>
+                  </div>
+                  <div className="mockup-log">
+                    <div className="mockup-log-icon">✓</div>
+                    <div className="mockup-log-text" style={{ width: '40%' }}></div>
+                  </div>
                 </div>
-            </footer>
-        </>
-    );
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        <div className="footer-title">Trusted by Engineering Teams At</div>
+        <div className="logos-row">
+          <span>TECHCORP</span>
+          <span>ACME INC</span>
+          <span>CLOUDNET</span>
+          <span>DATAFLOW</span>
+          <span>APEX</span>
+        </div>
+      </footer>
+    </>
+  );
 }

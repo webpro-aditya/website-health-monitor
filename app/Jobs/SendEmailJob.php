@@ -30,25 +30,24 @@ class SendEmailJob implements ShouldQueue
     {
         try {
             $config = EmailConfig::first();
-            if (!$config || !$config->is_active) {
-                $this->notification->update([
-                    'status' => 'failed',
-                    'error_log' => 'Email config is inactive or not found.',
-                    'provider_response' => 'Config inactive',
+            
+            // If DB config is active, dynamically override the mailer configuration
+            if ($config && $config->is_active) {
+                config([
+                    'mail.mailers.smtp.host' => $config->smtp_host,
+                    'mail.mailers.smtp.port' => $config->smtp_port,
+                    'mail.mailers.smtp.encryption' => $config->smtp_encryption,
+                    'mail.mailers.smtp.username' => $config->smtp_username,
+                    'mail.mailers.smtp.password' => $config->smtp_password,
+                    'mail.from.address' => $config->from_email,
+                    'mail.from.name' => $config->from_name,
                 ]);
-                return;
-            }
 
-            // Set mail configuration dynamically
-            config([
-                'mail.mailers.smtp.host' => $config->smtp_host,
-                'mail.mailers.smtp.port' => $config->smtp_port,
-                'mail.mailers.smtp.encryption' => $config->smtp_encryption,
-                'mail.mailers.smtp.username' => $config->smtp_username,
-                'mail.mailers.smtp.password' => $config->smtp_password,
-                'mail.from.address' => $config->from_email,
-                'mail.from.name' => $config->from_name,
-            ]);
+                // Purge the cached mailer instance to force it to read the new config
+                app('mail.manager')->purge('smtp');
+            }
+            // Otherwise, we gracefully fallback to the .env settings configured by default in Laravel
+
 
             $recipient = $this->notification->recipient;
             

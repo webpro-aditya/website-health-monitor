@@ -8,11 +8,12 @@ use App\Services\MonitoringService;
 use App\Services\NotificationDispatcher;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class CheckDomainJob implements ShouldQueue
+class CheckDomainJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -20,6 +21,14 @@ class CheckDomainJob implements ShouldQueue
 
     public $tries = 1;
     public $timeout = 30;
+
+    /**
+     * The unique ID of the job (prevents duplicate jobs for the same domain).
+     */
+    public function uniqueId(): string
+    {
+        return (string) $this->domainId;
+    }
 
     /**
      * Create a new job instance.
@@ -69,10 +78,10 @@ class CheckDomainJob implements ShouldQueue
             $domain->last_status_change_at = now();
             NotificationDispatcher::dispatch($domain, 'domain_recovered');
         } elseif ($domain->current_status === 'unknown') {
-            // First time check
-            $domain->current_status = $result->isUp ? 'up' : 'down';
-            if (!$result->isUp) {
-                $domain->down_since = now();
+            // First time check - only set to UP immediately if it's up.
+            // If it's down, we leave it as 'unknown' so the 3-failure threshold logic will trigger a proper 'down' state change later.
+            if ($result->isUp) {
+                $domain->current_status = 'up';
             }
         }
 

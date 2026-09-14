@@ -9,12 +9,25 @@ class DomainRepository implements DomainRepositoryInterface
 {
     public function getAllForUser(int $userId)
     {
-        $domains = DomainUrl::where('user_id', $userId)->orderByDesc('id')->get();
+        $user = \App\Models\User::find($userId);
+        $limit = $user ? $user->getMaxDomainsLimit() : 2;
+        $domains = DomainUrl::where('user_id', $userId)->orderBy('id', 'asc')->get();
         
-        return $domains->map(function ($domain) {
+        $activeCount = 0;
+        
+        return $domains->map(function ($domain) use (&$activeCount, $limit) {
             $statusFlag = 'DISABLED';
             if ($domain->status === 'enabled') {
-                $statusFlag = $domain->domain_status ? 'UP' : 'DOWN';
+                if ($activeCount >= $limit) {
+                    $statusFlag = 'FROZEN';
+                } else {
+                    $activeCount++;
+                    if (is_null($domain->last_checked)) {
+                        $statusFlag = 'PENDING';
+                    } else {
+                        $statusFlag = $domain->domain_status ? 'UP' : 'DOWN';
+                    }
+                }
             }
 
             return [
@@ -26,33 +39,18 @@ class DomainRepository implements DomainRepositoryInterface
                 'response' => $domain->response_time ? round($domain->response_time) . 'ms' : '--',
                 'checked'  => $domain->last_checked ? $domain->last_checked->format('Y-m-d H:i') : 'Never'
             ];
-        });
+        })->sortByDesc('id')->values();
     }
 
     public function save(string $name, string $url, string $status, int $userId, ?int $id = null)
     {
-        $interval = 900; // default 15min
-        if (!$id) {
-            $user = \App\Models\User::find($userId);
-            if ($user) {
-                $sub = $user->subscriptions()->where('status', 'active')->first();
-                if ($sub) {
-                    if (str_contains(strtolower($sub->plan_name), 'starter')) {
-                        $interval = 300; // 5min
-                    } elseif (str_contains(strtolower($sub->plan_name), 'pro') || str_contains(strtolower($sub->plan_name), 'enterprise')) {
-                        $interval = 60; // 1min
-                    }
-                }
-            }
-        }
-
         $domain = DomainUrl::updateOrCreate(
             ['id' => $id, 'user_id' => $userId],
             ['domain_name' => $name, 'url' => $url, 'status' => $status]
         );
 
         if (!$id) {
-            $domain->check_interval = $interval;
+            $domain->check_interval = $domain->getIntervalForSubscription();
             $domain->next_check_at = now();
             $domain->save();
         }
