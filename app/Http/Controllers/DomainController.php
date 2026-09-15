@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Repositories\DomainRepository;
 use Inertia\Inertia;
+use App\Models\DomainUrl;
+use App\Services\ActivityLogger;
 use Illuminate\Validation\Rule;
 
 class DomainController extends Controller
@@ -29,9 +31,9 @@ class DomainController extends Controller
             ? explode(',', $user->notification_phones) 
             : [];
             
-        $advancedSettings = $user->advanced_settings 
+        $advancedSettings = is_string($user->advanced_settings) 
             ? json_decode($user->advanced_settings, true) 
-            : null;
+            : $user->advanced_settings;
 
         $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
         $planDetails = [
@@ -99,6 +101,8 @@ class DomainController extends Controller
             $user->id
         );
 
+        ActivityLogger::log($user, 'added_domain', "Added new domain: {$request->url}");
+
         return back()->with('success', 'Domain added successfully.');
     }
 
@@ -121,6 +125,20 @@ class DomainController extends Controller
             'url.unique' => 'You have already added this domain URL.'
         ]);
 
+        $domain = DomainUrl::where('id', $id)->where('user_id', $request->user()->id)->first();
+        $changes = [];
+        if ($domain) {
+            if ($domain->domain_name !== $request->domain_name) {
+                $changes['domain_name'] = ['old' => $domain->domain_name, 'new' => $request->domain_name];
+            }
+            if ($domain->url !== $request->url) {
+                $changes['url'] = ['old' => $domain->url, 'new' => $request->url];
+            }
+            if ($domain->status !== $request->status) {
+                $changes['status'] = ['old' => $domain->status, 'new' => $request->status];
+            }
+        }
+
         $this->domainRepository->save(
             $request->domain_name,
             $request->url,
@@ -129,12 +147,23 @@ class DomainController extends Controller
             $id
         );
 
+        if (!empty($changes)) {
+            ActivityLogger::log($request->user(), 'updated_domain', "Updated domain: {$request->url}", $changes);
+        } else {
+            ActivityLogger::log($request->user(), 'updated_domain', "Updated domain: {$request->url}");
+        }
+
         return back()->with('success', 'Domain updated successfully.');
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->domainRepository->delete($id, $request->user()->id);
+        $domain = DomainUrl::where('id', $id)->where('user_id', $request->user()->id)->first();
+        if ($domain) {
+            $url = $domain->url;
+            $this->domainRepository->delete($id, $request->user()->id);
+            ActivityLogger::log($request->user(), 'deleted_domain', "Deleted domain: {$url}");
+        }
         return back()->with('success', 'Domain deleted successfully.');
     }
 

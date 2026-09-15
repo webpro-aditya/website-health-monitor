@@ -533,6 +533,10 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
                 <IconPlus size={16} /> Add Domain
               </button>
 
+              <Link href={route('activity-logs.index')} className="whm-btn whm-btn-ghost" style={{ textDecoration: 'none' }}>
+                <IconActivity size={16} /> Activity Log
+              </Link>
+
               <a href={route('logout.get')} className="whm-btn whm-btn-ghost-muted" style={{ textDecoration: 'none' }}>
                 <IconLogOut size={16} /> Logout
               </a>
@@ -1646,8 +1650,19 @@ const DASHBOARD_CSS = `
   .whm-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .whm-stat-card { padding: 16px 14px; }
   .whm-stat-value { font-size: 22px; }
-  .whm-header-actions { flex-wrap: wrap; }
-  .whm-btn { font-size: 12px; padding: 7px 12px; }
+  
+  .whm-header-actions { 
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+  }
+  .whm-plan-badge { width: 100%; justify-content: center; }
+  .whm-user-chip { flex: 1; justify-content: center; }
+  .whm-header-actions > .whm-btn-icon { flex: 0 0 auto; }
+  .whm-header-actions > .whm-btn:not(.whm-btn-icon) { flex: 1; min-width: calc(50% - 5px); justify-content: center; }
+  
+  .whm-btn { font-size: 12px; padding: 8px 12px; }
   .whm-section-header { padding: 16px 18px; }
   .whm-section-inner { padding: 0 18px 18px; }
   .whm-table th:nth-child(3), .whm-table td:nth-child(3),

@@ -351,8 +351,10 @@ body::before {
 }
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 32px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 .pricing-card {
   background: var(--c-card-bg);
@@ -622,31 +624,21 @@ body::before {
                     </div>
 
                     <div className="pricing-grid">
-                        <div className="pricing-card">
-                            <h3>Starter</h3>
-                            <div className="pricing-price">{billingCycle === 'monthly' ? '$9' : '$90'}<span>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span></div>
-                            <ul className="pricing-features">
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 5 domains</li>
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> 5-minute checks</li>
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Email alerts</li>
-                            </ul>
-                            <Link href={route('register') + `?plan=starter_${billingCycle}`} className="btn-secondary">Subscribe</Link>
-                        </div>
                         <div className="pricing-card popular">
                             <h3>Pro</h3>
-                            <div className="pricing-price">{billingCycle === 'monthly' ? '$29' : '$290'}<span>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span></div>
+                            <div className="pricing-price">{billingCycle === 'monthly' ? '₹499' : '₹4990'}<span>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span></div>
                             <ul className="pricing-features">
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 25 domains</li>
+                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 15 domains</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> 1-minute checks</li>
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> SMS alerts</li>
+                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Email & SMS alerts</li>
                             </ul>
                             <Link href={route('register') + `?plan=pro_${billingCycle}`} className="btn-primary">Subscribe</Link>
                         </div>
                         <div className="pricing-card">
                             <h3>Enterprise</h3>
-                            <div className="pricing-price">{billingCycle === 'monthly' ? '$99' : '$990'}<span>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span></div>
+                            <div className="pricing-price">{billingCycle === 'monthly' ? '₹1499' : '₹14990'}<span>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span></div>
                             <ul className="pricing-features">
-                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited domains</li>
+                                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 50 domains</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> 30-second checks</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Custom SLA</li>
                                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Priority Support</li>

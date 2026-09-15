@@ -26,6 +26,7 @@ class User extends Authenticatable
         'advanced_settings',
         'notification_emails',
         'trial_ends_at',
+        'activity_logging_enabled',
     ];
 
     public function domains()
@@ -36,6 +37,11 @@ class User extends Authenticatable
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
     }
 
     /**
@@ -52,6 +58,7 @@ class User extends Authenticatable
             'advanced_settings' => 'array',
             'notification_emails' => 'array',
             'trial_ends_at' => 'datetime',
+            'activity_logging_enabled' => 'boolean',
         ];
     }
 
@@ -65,12 +72,10 @@ class User extends Authenticatable
         if ($sub) {
             $planId = $sub->plan_name; // This holds the Razorpay plan_id
 
-            if ($planId === env('RAZORPAY_PLAN_STARTER_MONTHLY') || $planId === env('RAZORPAY_PLAN_STARTER_YEARLY')) {
-                $limit = 5;
-            } elseif ($planId === env('RAZORPAY_PLAN_PRO_MONTHLY') || $planId === env('RAZORPAY_PLAN_PRO_YEARLY')) {
-                $limit = 25;
+            if ($planId === env('RAZORPAY_PLAN_PRO_MONTHLY') || $planId === env('RAZORPAY_PLAN_PRO_YEARLY')) {
+                $limit = 15;
             } elseif ($planId === env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY') || $planId === env('RAZORPAY_PLAN_ENTERPRISE_YEARLY')) {
-                $limit = PHP_INT_MAX;
+                $limit = 50;
             }
         }
         

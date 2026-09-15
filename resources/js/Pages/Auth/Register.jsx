@@ -224,7 +224,7 @@ body{
 }
 .plan-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -416,9 +416,8 @@ body{
                             <div className="section-title">Select Plan</div>
                             <div className="plan-grid">
                                 {[
-                                    { id: 'starter', name: 'Starter', priceMonthly: '$9', priceYearly: '$90', desc: '5 domains' },
-                                    { id: 'pro', name: 'Pro', priceMonthly: '$29', priceYearly: '$290', desc: '25 domains', badge: 'Recommended' },
-                                    { id: 'enterprise', name: 'Enterprise', priceMonthly: '$99', priceYearly: '$990', desc: 'Unlimited' }
+                                    { id: 'pro', name: 'Pro', priceMonthly: '₹499', priceYearly: '₹4990', desc: '15 domains', badge: 'Recommended' },
+                                    { id: 'enterprise', name: 'Enterprise', priceMonthly: '₹1499', priceYearly: '₹14990', desc: '50 domains' }
                                 ].map(p => {
                                     const planId = p.id + '_' + billingCycle;
                                     const isActive = data.plan === planId;

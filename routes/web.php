@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\ActivityLogController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,6 +20,7 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::post('/domains/set-all', [DomainController::class, 'setAll'])->name('domains.set_all');
     Route::post('/notifications', [DomainController::class, 'saveNotifications'])->name('notifications.save');
     Route::post('/settings/advanced', [DomainController::class, 'saveAdvancedSettings'])->name('settings.advanced.save');
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 use App\Http\Controllers\PaymentController;
@@ -53,5 +55,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('config/sms', [AdminDashboardController::class, 'updateSmsConfig'])->name('config.sms');
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('logout', [AdminAuthController::class, 'logout'])->name('logout.get');
+        
+        // Activity Logs
+        Route::get('activity-logs', [AdminDashboardController::class, 'activityLogs'])->name('activity_logs');
+        Route::post('users/{user}/toggle-logging', [AdminDashboardController::class, 'toggleLogging'])->name('users.toggle_logging');
+        Route::post('users/bulk-toggle-logging', [AdminDashboardController::class, 'bulkToggleLogging'])->name('users.bulk_toggle_logging');
     });
 });

@@ -40,7 +40,8 @@ export default function SubscriptionIndex({ subscriptionDetails, razorpayKey, pl
     };
 
     const handleUpdatePlan = async (newPlanKey) => {
-        const currentRank = getRank(currentPlanId);
+        const currentPlanKey = Object.keys(plans).find(key => plans[key] === currentPlanId) || '';
+        const currentRank = getRank(currentPlanKey);
         const newRank = getRank(newPlanKey);
         
         const isDowngrade = newRank < currentRank;
@@ -132,7 +133,8 @@ export default function SubscriptionIndex({ subscriptionDetails, razorpayKey, pl
             );
         }
 
-        const isDowngrade = getRank(planKey) < getRank(currentPlanId);
+        const currentPlanKey = Object.keys(plans).find(key => plans[key] === currentPlanId) || '';
+        const isDowngrade = getRank(planKey) < getRank(currentPlanKey);
         
         return (
             <button 
@@ -298,6 +300,11 @@ export default function SubscriptionIndex({ subscriptionDetails, razorpayKey, pl
                 @media (max-width: 900px) {
                     .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
                 }
+                @media (max-width: 640px) {
+                    .whm-sub-root { padding: 20px 12px; }
+                    .whm-card { padding: 20px 16px; }
+                    .plan-card { padding: 24px; }
+                }
 
             `}} />
 
@@ -359,38 +366,16 @@ export default function SubscriptionIndex({ subscriptionDetails, razorpayKey, pl
                             </div>
                         </div>
 
-                        <div className="pricing-grid">
-                            {/* Starter */}
-                            <div className="plan-card">
-                                <h3 style={{ fontSize: '20px', fontWeight: '700' }}>Starter</h3>
-                                <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '8px', minHeight: '42px' }}>Perfect for personal projects and small sites.</div>
-                                <div style={{ margin: '24px 0', fontSize: '36px', fontWeight: '800', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                                    ${billingCycle === 'monthly' ? '9' : '7'}
-                                    <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-tertiary)' }}>/mo</span>
-                                </div>
-                                <div style={{ marginBottom: '24px' }}>
-                                    {getPlanAction(`starter_${billingCycle}`)}
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Includes:</div>
-                                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 10 Websites</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 5-minute check interval</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> Email alerts</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px', color: 'var(--text-tertiary)' }}><IconCheck size={18} style={{ color: 'var(--border)', flexShrink: 0 }} /> 30-day log retention</li>
-                                    </ul>
-                                </div>
-                            </div>
-
+                        <div className="pricing-grid" style={{ maxWidth: '800px', margin: '0 auto', gridTemplateColumns: 'repeat(2, 1fr)' }}>
                             {/* Pro */}
                             <div className="plan-card is-pro">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <IconZap size={20} style={{ color: 'var(--accent)' }} />
                                     <h3 style={{ fontSize: '20px', fontWeight: '700' }}>Pro</h3>
                                 </div>
-                                <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '8px', minHeight: '42px' }}>For professional developers and agencies.</div>
+                                <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '8px', minHeight: '42px' }}>For professional developers and freelancers.</div>
                                 <div style={{ margin: '24px 0', fontSize: '36px', fontWeight: '800', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                                    ${billingCycle === 'monthly' ? '29' : '23'}
+                                    ₹{billingCycle === 'monthly' ? '499' : '399'}
                                     <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-tertiary)' }}>/mo</span>
                                 </div>
                                 <div style={{ marginBottom: '24px' }}>
@@ -399,20 +384,20 @@ export default function SubscriptionIndex({ subscriptionDetails, razorpayKey, pl
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Includes:</div>
                                     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 50 Websites</li>
+                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 20 Websites</li>
                                         <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 1-minute check interval</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> Email + SMS + Slack</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> SSL monitoring</li>
+                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> Email & Webhook alerts</li>
+                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 90-day log retention</li>
                                     </ul>
                                 </div>
                             </div>
 
                             {/* Enterprise */}
                             <div className="plan-card">
-                                <h3 style={{ fontSize: '20px', fontWeight: '700' }}>Enterprise</h3>
-                                <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '8px', minHeight: '42px' }}>For large scale operations and teams.</div>
+                                <h3 style={{ fontSize: '20px', fontWeight: '700' }}>Enterprise / Agency</h3>
+                                <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '8px', minHeight: '42px' }}>For large scale web agencies.</div>
                                 <div style={{ margin: '24px 0', fontSize: '36px', fontWeight: '800', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                                    ${billingCycle === 'monthly' ? '79' : '63'}
+                                    ₹{billingCycle === 'monthly' ? '1499' : '1199'}
                                     <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-tertiary)' }}>/mo</span>
                                 </div>
                                 <div style={{ marginBottom: '24px' }}>
@@ -421,9 +406,9 @@ export default function SubscriptionIndex({ subscriptionDetails, razorpayKey, pl
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Includes:</div>
                                     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> Unlimited websites</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 30-second check interval</li>
-                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> All notification channels</li>
+                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 100 Websites</li>
+                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> 1-minute check interval</li>
+                                        <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> SMS & SSL Expiry Alerts</li>
                                         <li style={{ display: 'flex', gap: '10px', fontSize: '14px' }}><IconCheck size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} /> Priority support</li>
                                     </ul>
                                 </div>

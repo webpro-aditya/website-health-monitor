@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Contracts\PaymentGatewayInterface;
 use App\Models\Subscription;
+use App\Services\ActivityLogger;
 
 class PaymentController extends Controller
 {
@@ -68,6 +69,8 @@ class PaymentController extends Controller
         $user->trial_ends_at = now()->addDays((int) config('app.trial_days', 14));
         $user->save();
 
+        ActivityLogger::log($user, 'started_trial', 'Started 14-day free trial');
+
         return redirect()->route('dashboard');
     }
 
@@ -92,6 +95,8 @@ class PaymentController extends Controller
                     // Update our DB record
                     $activeSubscription->plan_name = $request->plan_id;
                     $activeSubscription->save();
+
+                    ActivityLogger::log($user, 'changed_plan', "Changed subscription plan to: {$request->plan_id}");
 
                     return response()->json([
                         'subscription_id' => $updatedSub['id'],
@@ -147,6 +152,8 @@ class PaymentController extends Controller
 
                 $subscription->status = 'active';
                 $subscription->save();
+
+                ActivityLogger::log($subscription->user, 'subscription_activated', "Activated subscription plan: {$subscription->plan_name}");
             }
             return redirect()->route('dashboard');
         }
