@@ -411,14 +411,33 @@ body::before {
 .footer-bottom { max-width: 1100px; margin: 0 auto; border-top: 1px solid var(--c-border); padding-top: 32px; display: flex; justify-content: space-between; align-items: center; color: var(--c-sub); font-size: 14px; }
 
 @media(max-width: 900px) {
-  .features-grid, .pricing-grid, .footer-grid { grid-template-columns: 1fr; }
-  .timeline { flex-direction: column; gap: 40px; }
-  .timeline::before { display: none; }
+  .section { padding: 60px 20px; }
+  .section-header { margin-bottom: 40px; }
+  .hero { padding: 120px 20px 40px; }
+  .hero p { margin-bottom: 30px; }
+  .mockup-wrapper { margin-bottom: 60px; }
+  .final-cta { padding: 60px 20px; }
+  .final-cta h2 { font-size: 36px; margin-bottom: 24px; }
+  .footer { padding: 60px 20px 30px; }
+  .footer-grid { margin-bottom: 40px; }
+
+  .features-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+  .timeline { flex-direction: column; gap: 32px; align-items: flex-start; padding-left: 20px; position: relative; }
+  .timeline::before { display: block; top: 0; bottom: 0; left: 44px; width: 2px; height: auto; }
+  .timeline-step { display: flex; text-align: left; align-items: flex-start; gap: 24px; flex-direction: row; }
+  .timeline-number { margin: 0; width: 48px; height: 48px; font-size: 20px; flex-shrink: 0; z-index: 2; }
+  .timeline-step > div:not(.timeline-number) { display: flex; flex-direction: column; justify-content: center; padding-top: 4px; }
+  .timeline-step h3 { margin-bottom: 4px; }
+  .timeline-step p { margin: 0; max-width: none; }
   .pricing-card.popular { transform: scale(1); }
   .hero h1 { font-size: 42px; }
   .nav-links { display: none; }
   .mockup-body { flex-direction: column; }
   .mockup-sidebar { display: none; }
+}
+@media(max-width: 500px) {
+  .footer-grid { grid-template-columns: 1fr; text-align: center; }
 }
 `}} />
 
@@ -575,18 +594,24 @@ body::before {
                     <div className="timeline">
                         <div className="timeline-step">
                             <div className="timeline-number">1</div>
-                            <h3>Add Domain</h3>
-                            <p>Enter your website URL or API endpoint.</p>
+                            <div>
+                                <h3>Add Domain</h3>
+                                <p>Enter your website URL or API endpoint.</p>
+                            </div>
                         </div>
                         <div className="timeline-step">
                             <div className="timeline-number">2</div>
-                            <h3>Set Alerts</h3>
-                            <p>Configure Email or SMS notifications.</p>
+                            <div>
+                                <h3>Set Alerts</h3>
+                                <p>Configure Email or SMS notifications.</p>
+                            </div>
                         </div>
                         <div className="timeline-step">
                             <div className="timeline-number">3</div>
-                            <h3>Get Notified</h3>
-                            <p>We'll alert you immediately if anything goes wrong.</p>
+                            <div>
+                                <h3>Get Notified</h3>
+                                <p>We'll alert you immediately if anything goes wrong.</p>
+                            </div>
                         </div>
                     </div>
 
