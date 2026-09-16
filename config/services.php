@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'razorpay' => [
+        'plan_starter_monthly' => env('RAZORPAY_PLAN_STARTER_MONTHLY'),
+        'plan_starter_yearly' => env('RAZORPAY_PLAN_STARTER_YEARLY'),
+        'plan_pro_monthly' => env('RAZORPAY_PLAN_PRO_MONTHLY'),
+        'plan_pro_yearly' => env('RAZORPAY_PLAN_PRO_YEARLY'),
+        'plan_enterprise_monthly' => env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY'),
+        'plan_enterprise_yearly' => env('RAZORPAY_PLAN_ENTERPRISE_YEARLY'),
+    ],
+
 ];

@@ -57,6 +57,7 @@ class User extends Authenticatable
             'is_active' => 'boolean',
             'advanced_settings' => 'array',
             'notification_emails' => 'array',
+            'notification_phones' => 'array',
             'trial_ends_at' => 'datetime',
             'activity_logging_enabled' => 'boolean',
         ];
@@ -72,9 +73,9 @@ class User extends Authenticatable
         if ($sub) {
             $planId = $sub->plan_name; // This holds the Razorpay plan_id
 
-            if ($planId === env('RAZORPAY_PLAN_PRO_MONTHLY') || $planId === env('RAZORPAY_PLAN_PRO_YEARLY')) {
+            if ($planId === config('services.razorpay.plan_pro_monthly') || $planId === config('services.razorpay.plan_pro_yearly')) {
                 $limit = 15;
-            } elseif ($planId === env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY') || $planId === env('RAZORPAY_PLAN_ENTERPRISE_YEARLY')) {
+            } elseif ($planId === config('services.razorpay.plan_enterprise_monthly') || $planId === config('services.razorpay.plan_enterprise_yearly')) {
                 $limit = 50;
             }
         }

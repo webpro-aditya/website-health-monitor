@@ -26,19 +26,40 @@ class DomainController extends Controller
     public function index(Request $request, \App\Services\SubscriptionService $subscriptionService)
     {
         $user = $request->user();
-        $domains = $this->domainRepository->getAllForUser($user->id);
+        $domainsRaw = $this->domainRepository->getAllForUser($user->id);
         
-        $alertEmails = $user->notification_emails 
-            ? explode(',', $user->notification_emails) 
-            : [];
-            
-        $alertPhones = $user->notification_phones 
-            ? explode(',', $user->notification_phones) 
-            : [];
-            
-        $advancedSettings = is_string($user->advanced_settings) 
-            ? json_decode($user->advanced_settings, true) 
-            : $user->advanced_settings;
+        $limit = $user->getMaxDomainsLimit();
+        $activeCount = 0;
+        
+        $domains = $domainsRaw->map(function ($domain) use (&$activeCount, $limit) {
+            $statusFlag = 'DISABLED';
+            if ($domain->status === 'enabled') {
+                if ($activeCount >= $limit) {
+                    $statusFlag = 'FROZEN';
+                } else {
+                    $activeCount++;
+                    if (is_null($domain->last_checked)) {
+                        $statusFlag = 'PENDING';
+                    } else {
+                        $statusFlag = $domain->domain_status ? 'UP' : 'DOWN';
+                    }
+                }
+            }
+
+            return [
+                'id'       => $domain->id,
+                'name'     => $domain->domain_name ?? 'Unknown',
+                'url'      => $domain->url,
+                'status'   => $statusFlag,
+                'enabled'  => $domain->status === 'enabled',
+                'response' => $domain->response_time ? round($domain->response_time) . 'ms' : '--',
+                'checked'  => $domain->last_checked ? $domain->last_checked->format('Y-m-d H:i') : 'Never'
+            ];
+        })->sortByDesc('id')->values();
+        
+        $alertEmails = $user->notification_emails ?: [];
+        $alertPhones = $user->notification_phones ?: [];
+        $advancedSettings = $user->advanced_settings ?: [];
 
         $planDetails = $subscriptionService->getBasicPlanDetails($user);
 
@@ -76,7 +97,7 @@ class DomainController extends Controller
     public function update(UpdateDomainRequest $request, $id)
     {
 
-        $domain = DomainUrl::where('id', $id)->where('user_id', $request->user()->id)->first();
+        $domain = $this->domainRepository->findByIdAndUser($id, $request->user()->id);
         $changes = [];
         if ($domain) {
             if ($domain->domain_name !== $request->domain_name) {
@@ -109,7 +130,7 @@ class DomainController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $domain = DomainUrl::where('id', $id)->where('user_id', $request->user()->id)->first();
+        $domain = $this->domainRepository->findByIdAndUser($id, $request->user()->id);
         if ($domain) {
             $url = $domain->url;
             $this->domainRepository->delete($id, $request->user()->id);
@@ -122,8 +143,7 @@ class DomainController extends Controller
     {
         $status = $request->enabled ? 'enabled' : 'disabled';
         
-        \App\Models\DomainUrl::where('user_id', $request->user()->id)
-            ->update(['status' => $status]);
+        $this->domainRepository->setAll($status, $request->user()->id);
             
         return back()->with('success', 'All domains updated successfully.');
     }
@@ -140,8 +160,8 @@ class DomainController extends Controller
         });
 
         $user = $request->user();
-        $user->notification_emails = implode(',', $validEmails);
-        $user->notification_phones = implode(',', $validPhones);
+        $user->notification_emails = $validEmails;
+        $user->notification_phones = $validPhones;
         $user->save();
 
         return back()->with('success', 'Preferences saved successfully.');
@@ -150,7 +170,7 @@ class DomainController extends Controller
     {
 
         $user = $request->user();
-        $user->advanced_settings = json_encode($request->settings);
+        $user->advanced_settings = $request->settings;
         $user->save();
 
         return back()->with('success', 'Advanced settings saved successfully.');
