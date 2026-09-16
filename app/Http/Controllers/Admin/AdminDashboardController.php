@@ -105,6 +105,20 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'Activity logging toggled for ' . $user->name);
     }
 
+    public function toggleAccess(User $user)
+    {
+        // Prevent admin from disabling themselves
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot disable your own account.');
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $status = $user->is_active ? 'enabled' : 'disabled';
+        return back()->with('success', "Account access $status for " . $user->name);
+    }
+
     public function bulkToggleLogging(BulkToggleLoggingRequest $request)
     {
         User::whereIn('id', $request->user_ids)->update(['activity_logging_enabled' => $request->enabled]);

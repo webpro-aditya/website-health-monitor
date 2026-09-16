@@ -84,6 +84,10 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
       router.post(route('admin.users.toggle_logging', u.id), {}, { preserveScroll: true });
   };
 
+  const toggleUserAccess = (u) => {
+      router.post(route('admin.users.toggle_access', u.id), {}, { preserveScroll: true });
+  };
+
   const bulkToggleLogging = (enabled) => {
       if (selectedUsers.length === 0) return;
       router.post(route('admin.users.bulk_toggle_logging'), { user_ids: selectedUsers, enabled }, {
@@ -741,6 +745,7 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
                       <th>Subscription</th>
                       <th>Domains</th>
                       <th>Joined</th>
+                      <th>Access</th>
                       <th>Logging</th>
                     </tr>
                   </thead>
@@ -764,6 +769,9 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
                         </td>
                         <td style={{ fontWeight: '700' }}>{u.domains_count}</td>
                         <td style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{new Date(u.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <Toggle checked={u.is_active} onChange={() => toggleUserAccess(u)} />
+                        </td>
                         <td>
                           <Toggle checked={u.activity_logging_enabled} onChange={() => toggleUserLogging(u)} />
                         </td>

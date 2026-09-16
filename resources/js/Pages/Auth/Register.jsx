@@ -45,7 +45,7 @@ export default function Register({ trialDays }) {
     
     // Keep plan sync with billing cycle
     useEffect(() => {
-        if (data.plan) {
+        if (data.plan && data.plan !== 'free_trial') {
             const base = data.plan.split('_')[0];
             setData('plan', base + '_' + billingCycle);
         }

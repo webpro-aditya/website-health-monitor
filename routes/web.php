@@ -64,6 +64,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Activity Logs
         Route::get('activity-logs', [AdminDashboardController::class, 'activityLogs'])->name('activity_logs');
         Route::post('users/{user}/toggle-logging', [AdminDashboardController::class, 'toggleLogging'])->name('users.toggle_logging');
+        Route::post('users/{user}/toggle-access', [AdminDashboardController::class, 'toggleAccess'])->name('users.toggle_access');
         Route::post('users/bulk-toggle-logging', [AdminDashboardController::class, 'bulkToggleLogging'])->name('users.bulk_toggle_logging');
     });
 });

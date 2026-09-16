@@ -24,6 +24,10 @@ class AdminAuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             if (Auth::user()->role === 'admin') {
+                if (!Auth::user()->is_active) {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Your admin account has been disabled.'])->onlyInput('email');
+                }
                 $request->session()->regenerate();
                 return redirect()->intended(route('admin.dashboard', absolute: false));
             }

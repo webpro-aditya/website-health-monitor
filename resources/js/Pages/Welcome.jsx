@@ -352,7 +352,7 @@ body::before {
           ) : (
             <>
               <Link href={route('login')} className="nav-link">Sign In</Link>
-              <Link href={route('register')} className="btn-primary">Start Free Trial</Link>
+              <Link href={route('register', { plan: 'free_trial' })} className="btn-primary">Start Free Trial</Link>
             </>
           )}
 
@@ -372,7 +372,7 @@ body::before {
               <Link href={route('dashboard')} className="btn-primary">Go to Dashboard</Link>
             ) : (
               <>
-                <Link href={route('register')} className="btn-primary">Start your 14-day free trial</Link>
+                <Link href={route('register', { plan: 'free_trial' })} className="btn-primary">Start your 14-day free trial</Link>
                 <a href="#pricing" className="btn-secondary">View Pricing</a>
               </>
             )}

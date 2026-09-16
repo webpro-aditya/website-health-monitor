@@ -457,7 +457,7 @@ body::before {
                     ) : (
                         <>
                             <Link href={route('login')} className="nav-link">Sign In</Link>
-                            <Link href={route('register')} className="btn-primary">Start {trialDays ? trialDays + '-day ' : ''}Free Trial</Link>
+                            <Link href={route('register', { plan: 'free_trial' })} className="btn-primary">Start {trialDays ? trialDays + '-day ' : ''}Free Trial</Link>
                         </>
                     )}
                     
@@ -477,7 +477,7 @@ body::before {
                             <Link href={route('dashboard')} className="btn-primary">Go to Dashboard</Link>
                         ) : (
                             <>
-                                <Link href={route('register')} className="btn-primary">Start your {trialDays ? trialDays + '-day ' : ''}free trial</Link>
+                                <Link href={route('register', { plan: 'free_trial' })} className="btn-primary">Start your {trialDays ? trialDays + '-day ' : ''}free trial</Link>
                                 <a href="#pricing" className="btn-secondary">View Pricing</a>
                             </>
                         )}
@@ -694,7 +694,7 @@ body::before {
 
                 <section className="final-cta">
                     <h2>Ready to stop worrying about downtime?</h2>
-                    <Link href={route('register')} className="btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>Start your {trialDays ? trialDays + '-day ' : ''}free trial</Link>
+                    <Link href={route('register', { plan: 'free_trial' })} className="btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>Start your {trialDays ? trialDays + '-day ' : ''}free trial</Link>
                 </section>
             </main>
 
