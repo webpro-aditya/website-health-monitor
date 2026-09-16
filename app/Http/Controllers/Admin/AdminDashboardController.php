@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use App\Http\Requests\BulkToggleLoggingRequest;
+use Carbon\Carbon;
 use Inertia\Inertia;
 
 use App\Models\EmailConfig;
@@ -109,5 +110,85 @@ class AdminDashboardController extends Controller
         User::whereIn('id', $request->user_ids)->update(['activity_logging_enabled' => $request->enabled]);
 
         return back()->with('success', 'Bulk activity logging settings updated.');
+    }
+
+    public function analyticsUsers(Request $request)
+    {
+        $date = $request->query('date');
+        $query = User::query();
+        if (strlen($date) === 7) {
+            $query->whereYear('created_at', substr($date, 0, 4))
+                  ->whereMonth('created_at', substr($date, 5, 2));
+        } else {
+            $query->whereDate('created_at', $date);
+        }
+        
+        $users = $query->with('subscriptions')->get()->map(function($u) {
+            $plan = 'No Plan';
+            if ($u->subscriptions->count() > 0) {
+                $plan = $u->subscriptions->first()->plan_name;
+            } elseif ($u->trial_ends_at && $u->trial_ends_at->isFuture()) {
+                $plan = 'Free Trial';
+            }
+            return [
+                'name' => $u->name,
+                'email' => $u->email,
+                'plan' => $plan,
+                'joined' => $u->created_at->format('Y-m-d H:i')
+            ];
+        });
+        
+        return response()->json(['data' => $users]);
+    }
+
+    public function analyticsMonitoring(Request $request)
+    {
+        $timeBucket = $request->query('time_bucket');
+        if (strpos($timeBucket, ' ') !== false) {
+            $start = Carbon::parse($timeBucket);
+            $end = $start->copy()->addHour();
+        } else {
+            $start = Carbon::parse($timeBucket)->startOfDay();
+            $end = Carbon::parse($timeBucket)->endOfDay();
+        }
+
+        $logs = \App\Models\MonitoringLog::with('domain')
+            ->whereBetween('checked_at', [$start, $end])
+            ->where(function($q) {
+                $q->where('is_up', 0)
+                  ->orWhere('response_time_ms', '>', 1000);
+            })
+            ->orderBy('is_up', 'asc')
+            ->orderBy('response_time_ms', 'desc')
+            ->take(50)
+            ->get()
+            ->map(function($log) {
+                return [
+                    'url' => $log->domain ? $log->domain->url : 'Unknown',
+                    'status' => $log->is_up ? 'UP' : 'DOWN',
+                    'response_time' => $log->response_time_ms . 'ms',
+                    'time' => $log->checked_at->format('Y-m-d H:i:s')
+                ];
+            });
+
+        return response()->json(['data' => $logs]);
+    }
+
+    public function analyticsDomains(Request $request)
+    {
+        $status = $request->query('status');
+        $domains = DomainUrl::with('user')
+            ->where('current_status', $status)
+            ->take(100)
+            ->get()
+            ->map(function($d) {
+                return [
+                    'url' => $d->url,
+                    'owner' => $d->user ? $d->user->email : 'Unknown',
+                    'last_checked' => $d->last_checked_at ? $d->last_checked_at->diffForHumans() : 'Never'
+                ];
+            });
+            
+        return response()->json(['data' => $domains]);
     }
 }

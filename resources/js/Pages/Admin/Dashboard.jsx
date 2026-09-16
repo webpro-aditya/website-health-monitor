@@ -48,6 +48,30 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Modal State for Chart Clicks
+  const [modalState, setModalState] = useState({
+      isOpen: false,
+      title: '',
+      type: '', // 'users', 'monitoring', 'domains'
+      data: [],
+      loading: false
+  });
+
+  const openModal = (title, type, fetchUrl) => {
+      setModalState({ isOpen: true, title, type, data: [], loading: true });
+      fetch(fetchUrl)
+        .then(res => res.json())
+        .then(resData => {
+            setModalState(prev => ({ ...prev, data: resData.data, loading: false }));
+        })
+        .catch(err => {
+            console.error(err);
+            setModalState(prev => ({ ...prev, loading: false }));
+        });
+  };
+
+  const closeModal = () => setModalState(prev => ({ ...prev, isOpen: false }));
+
   const fetchLogs = () => {
       setLoadingLogs(true);
       fetch(route('admin.activity_logs'))
@@ -163,7 +187,17 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
             tension: 0.4
           }]
         },
-        options: commonOptions
+        options: {
+          ...commonOptions,
+          onClick: (e, elements, chart) => {
+            if (elements.length > 0) {
+                const idx = elements[0].index;
+                const rawDate = analytics.userGrowth[idx].raw_date;
+                const label = analytics.userGrowth[idx].date;
+                openModal(`Users Joined (${label})`, 'users', `/admin/api/analytics/users?date=${rawDate}`);
+            }
+          }
+        }
       });
     }
 
@@ -188,6 +222,14 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
           scales: {
             ...commonOptions.scales,
             y: { ...commonOptions.scales.y, min: 90, max: 100 }
+          },
+          onClick: (e, elements, chart) => {
+            if (elements.length > 0) {
+                const idx = elements[0].index;
+                const rawTime = analytics.hourlyData[idx].raw_time;
+                const label = analytics.hourlyData[idx].time;
+                openModal(`Poor Performance Checks (${label})`, 'monitoring', `/admin/api/analytics/monitoring?time_bucket=${rawTime}`);
+            }
           }
         }
       });
@@ -208,7 +250,17 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
             tension: 0.3
           }]
         },
-        options: commonOptions
+        options: {
+          ...commonOptions,
+          onClick: (e, elements, chart) => {
+            if (elements.length > 0) {
+                const idx = elements[0].index;
+                const rawTime = analytics.hourlyData[idx].raw_time;
+                const label = analytics.hourlyData[idx].time;
+                openModal(`Poor Performance Checks (${label})`, 'monitoring', `/admin/api/analytics/monitoring?time_bucket=${rawTime}`);
+            }
+          }
+        }
       });
     }
 
@@ -233,6 +285,13 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
           color: textColor,
           plugins: {
             legend: { position: 'right', labels: { color: textColor } }
+          },
+          onClick: (e, elements, chart) => {
+            if (elements.length > 0) {
+                const idx = elements[0].index;
+                const status = statuses[idx];
+                openModal(`Domains (${status.toUpperCase()})`, 'domains', `/admin/api/analytics/domains?status=${status}`);
+            }
           }
         }
       });
@@ -337,6 +396,18 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
 .whm-table tr:last-child td { border-bottom: none; }
 .whm-table tr:hover td { background: var(--surface-hover); }
 
+@keyframes whmPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.whm-skeleton {
+  height: 16px;
+  background: var(--surface-hover);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  animation: whmPulse 1.5s ease-in-out infinite;
+}
+
 /* BADGES */
 .whm-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; }
 .whm-badge-admin { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
@@ -409,6 +480,60 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
       <Head title="Admin Control" />
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div className="whm-container">
+        
+        {modalState.isOpen && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={closeModal}>
+                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', width: '90%', maxWidth: '800px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '700' }}>{modalState.title}</h3>
+                        <button onClick={closeModal} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: '28px', lineHeight: '20px' }}>&times;</button>
+                    </div>
+                    <div style={{ padding: '0', overflowY: 'auto', flex: 1 }}>
+                        {modalState.loading ? (
+                            <div style={{ padding: '30px' }}>
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+                                        <div className="whm-skeleton" style={{ width: '30%', height: '20px' }}></div>
+                                        <div className="whm-skeleton" style={{ width: '20%', height: '20px' }}></div>
+                                        <div className="whm-skeleton" style={{ width: '25%', height: '20px' }}></div>
+                                        <div className="whm-skeleton" style={{ width: '25%', height: '20px' }}></div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : modalState.data.length === 0 ? (
+                            <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: '40px' }}>No detailed data found for this selection.</div>
+                        ) : (
+                            <table className="whm-table" style={{ width: '100%' }}>
+                                {modalState.type === 'users' && (
+                                    <>
+                                        <thead style={{ position: 'sticky', top: 0, zIndex: 2 }}><tr><th>Name</th><th>Email</th><th>Plan</th><th>Joined</th></tr></thead>
+                                        <tbody>
+                                            {modalState.data.map((u, i) => <tr key={i}><td style={{fontWeight: '600'}}>{u.name}</td><td>{u.email}</td><td><span className={`whm-badge ${u.plan === 'Free Trial' ? 'whm-badge-trial' : (u.plan === 'No Plan' ? 'whm-badge-none' : 'whm-badge-pro')}`}>{u.plan}</span></td><td style={{fontSize: '12px'}}>{u.joined}</td></tr>)}
+                                        </tbody>
+                                    </>
+                                )}
+                                {modalState.type === 'monitoring' && (
+                                    <>
+                                        <thead style={{ position: 'sticky', top: 0, zIndex: 2 }}><tr><th>URL</th><th>Status</th><th>Response Time</th><th>Time</th></tr></thead>
+                                        <tbody>
+                                            {modalState.data.map((m, i) => <tr key={i}><td><a href={m.url} target="_blank" style={{color: 'var(--accent)', textDecoration: 'none'}}>{m.url}</a></td><td><span className={`whm-badge ${m.status==='UP'?'whm-badge-trial':'whm-badge-admin'}`}>{m.status}</span></td><td>{m.response_time}</td><td style={{fontSize: '12px'}}>{m.time}</td></tr>)}
+                                        </tbody>
+                                    </>
+                                )}
+                                {modalState.type === 'domains' && (
+                                    <>
+                                        <thead style={{ position: 'sticky', top: 0, zIndex: 2 }}><tr><th>URL</th><th>Owner</th><th>Last Checked</th></tr></thead>
+                                        <tbody>
+                                            {modalState.data.map((d, i) => <tr key={i}><td><a href={d.url} target="_blank" style={{color: 'var(--accent)', textDecoration: 'none'}}>{d.url}</a></td><td>{d.owner}</td><td>{d.last_checked}</td></tr>)}
+                                        </tbody>
+                                    </>
+                                )}
+                            </table>
+                        )}
+                    </div>
+                </div>
+            </div>
+        )}
         
         {/* HEADER */}
         <header className="whm-header">

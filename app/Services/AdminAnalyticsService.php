@@ -104,6 +104,7 @@ class AdminAnalyticsService
                 $runningTotal += $dayData ? $dayData->count : 0;
                 $userGrowth[] = [
                     'date' => $currentDate->format('M d'),
+                    'raw_date' => $currentDate->format('Y-m-d'),
                     'count' => $runningTotal
                 ];
                 $currentDate->addDay();
@@ -118,6 +119,7 @@ class AdminAnalyticsService
                  $runningTotal += $monthData ? $monthData->count : 0;
                  $userGrowth[] = [
                      'date' => $currentDate->format('M Y'),
+                     'raw_date' => $currentDate->format('Y-m'),
                      'count' => $runningTotal
                  ];
                  $currentDate->addMonth();
@@ -143,6 +145,7 @@ class AdminAnalyticsService
                 $data = $healthDataRaw->firstWhere('time_bucket', $bucket);
                 $hourlyData[] = [
                     'time' => $currentDate->format('M d, H:00'),
+                    'raw_time' => $currentDate->format('Y-m-d H:00:00'),
                     'uptime' => $data ? (float)$data->uptime : 100,
                     'response_time' => $data && $data->response_time ? (int)$data->response_time : 0
                 ];
@@ -162,6 +165,7 @@ class AdminAnalyticsService
                 $data = $healthDataRaw->firstWhere('time_bucket', $bucket);
                 $hourlyData[] = [
                     'time' => $currentDate->format('M d'),
+                    'raw_time' => $currentDate->format('Y-m-d'),
                     'uptime' => $data ? (float)$data->uptime : 100,
                     'response_time' => $data && $data->response_time ? (int)$data->response_time : 0
                 ];

@@ -56,6 +56,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('logout', [AdminAuthController::class, 'logout'])->name('logout.get');
         
+        // API routes for analytics
+        Route::get('api/analytics/users', [AdminDashboardController::class, 'analyticsUsers'])->name('api.analytics.users');
+        Route::get('api/analytics/monitoring', [AdminDashboardController::class, 'analyticsMonitoring'])->name('api.analytics.monitoring');
+        Route::get('api/analytics/domains', [AdminDashboardController::class, 'analyticsDomains'])->name('api.analytics.domains');
+
         // Activity Logs
         Route::get('activity-logs', [AdminDashboardController::class, 'activityLogs'])->name('activity_logs');
         Route::post('users/{user}/toggle-logging', [AdminDashboardController::class, 'toggleLogging'])->name('users.toggle_logging');
