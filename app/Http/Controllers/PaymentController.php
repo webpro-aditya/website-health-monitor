@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\CheckoutRequest;
+use App\Http\Requests\VerifyPaymentRequest;
 use Inertia\Inertia;
 use App\Contracts\PaymentGatewayInterface;
 use App\Models\Subscription;
@@ -17,144 +19,50 @@ class PaymentController extends Controller
         $this->gateway = $gateway;
     }
 
-    public function checkout(Request $request, PaymentGatewayInterface $gateway)
+    public function checkout(Request $request, \App\Services\PaymentService $paymentService)
     {
         if ($request->query('plan') === 'free_trial') {
-            return $this->skipPayment($request);
+            return $this->skipPayment($request, $paymentService);
         }
 
         $user = $request->user();
-        $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
+        $requestedPlan = $request->query('plan', 'pro_monthly');
         
-        $currentPlan = null;
-        $expiryDate = null;
-        
-        if ($activeSubscription) {
-            $currentPlan = $activeSubscription->plan_name;
-            try {
-                $rzpSub = $gateway->getSubscription($activeSubscription->razorpay_subscription_id);
-                if (isset($rzpSub['current_end'])) {
-                    $expiryDate = date('Y-m-d\TH:i:s.000\Z', $rzpSub['current_end']);
-                }
-            } catch (\Exception $e) {
-                // ignore
-            }
-        } elseif ($user->trial_ends_at && $user->trial_ends_at->isFuture()) {
-            $currentPlan = 'trial';
-            $expiryDate = $user->trial_ends_at->toISOString();
-        }
+        $checkoutData = $paymentService->getCheckoutData($user, $requestedPlan);
 
-        return Inertia::render('Payment/Checkout', [
-            'trialDays' => (int) config('app.trial_days', 14),
-            'razorpayKey' => env('RAZORPAY_KEY_ID'),
-            'plans' => [
-                'starter_monthly' => env('RAZORPAY_PLAN_STARTER_MONTHLY'),
-                'starter_yearly' => env('RAZORPAY_PLAN_STARTER_YEARLY'),
-                'pro_monthly' => env('RAZORPAY_PLAN_PRO_MONTHLY'),
-                'pro_yearly' => env('RAZORPAY_PLAN_PRO_YEARLY'),
-                'enterprise_monthly' => env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY'),
-                'enterprise_yearly' => env('RAZORPAY_PLAN_ENTERPRISE_YEARLY'),
-            ],
-            'selectedPlan' => $request->query('plan', 'pro_monthly'),
-            'currentSubscription' => [
-                'plan' => $currentPlan,
-                'expiry' => $expiryDate
-            ]
-        ]);
+        return Inertia::render('Payment/Checkout', $checkoutData);
     }
 
-    public function skipPayment(Request $request)
+    public function skipPayment(Request $request, \App\Services\PaymentService $paymentService)
     {
         $user = $request->user();
-        $user->trial_ends_at = now()->addDays((int) config('app.trial_days', 14));
-        $user->save();
-
-        ActivityLogger::log($user, 'started_trial', 'Started 14-day free trial');
+        $paymentService->startFreeTrial($user);
 
         return redirect()->route('dashboard');
     }
 
-    public function createSubscription(Request $request)
+    public function createSubscription(CheckoutRequest $request, \App\Services\PaymentService $paymentService)
     {
-        $request->validate([
-            'plan_id' => 'required|string'
-        ]);
-
         $user = $request->user();
-        $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
 
         try {
-            if ($activeSubscription) {
-                try {
-                    // Update existing subscription
-                    $updatedSub = $this->gateway->updateSubscription(
-                        $activeSubscription->razorpay_subscription_id, 
-                        $request->plan_id
-                    );
-                    
-                    // Update our DB record
-                    $activeSubscription->plan_name = $request->plan_id;
-                    $activeSubscription->save();
-
-                    ActivityLogger::log($user, 'changed_plan', "Changed subscription plan to: {$request->plan_id}");
-
-                    return response()->json([
-                        'subscription_id' => $updatedSub['id'],
-                        'status' => 'updated'
-                    ]);
-                } catch (\Exception $updateException) {
-                    \Log::warning('Razorpay update failed, falling back to new subscription: ' . $updateException->getMessage());
-                    // Fall back to creating a new subscription below
-                }
-            }
-
-            // Create new subscription (for new user, or if update failed due to Razorpay constraints like UPI)
-            $subscription = $this->gateway->createSubscription($request->plan_id);
-            
-            Subscription::create([
-                'user_id' => $user->id,
-                'razorpay_subscription_id' => $subscription['id'],
-                'plan_name' => $request->plan_id,
-                'status' => 'created'
-            ]);
-
-            return response()->json([
-                'subscription_id' => $subscription['id']
-            ]);
+            $result = $paymentService->createOrUpdateSubscription($user, $request->plan_id);
+            return response()->json($result);
         } catch (\Exception $e) {
             \Log::error('Payment Error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 
-    public function verifyPayment(Request $request)
+    public function verifyPayment(VerifyPaymentRequest $request, \App\Services\PaymentService $paymentService)
     {
-        $request->validate([
-            'razorpay_payment_id' => 'required|string',
-            'razorpay_subscription_id' => 'required|string',
-            'razorpay_signature' => 'required|string',
-        ]);
-
-        $isValid = $this->gateway->verifySignature($request->only([
+        $success = $paymentService->verifyAndActivateSubscription($request->only([
             'razorpay_payment_id',
             'razorpay_subscription_id',
             'razorpay_signature'
         ]));
 
-        if ($isValid) {
-            $subscription = Subscription::where('razorpay_subscription_id', $request->razorpay_subscription_id)->first();
-            if ($subscription) {
-                // Cancel any old active subscriptions for this user to avoid duplicate plans
-                Subscription::where('user_id', $subscription->user_id)
-                    ->where('id', '!=', $subscription->id)
-                    ->where('status', 'active')
-                    ->update(['status' => 'cancelled']);
-
-                $subscription->status = 'active';
-                $subscription->save();
-
-                ActivityLogger::log($subscription->user, 'subscription_activated', "Activated subscription plan: {$subscription->plan_name}");
-            }
+        if ($success) {
             return redirect()->route('dashboard');
         }
 

@@ -8,6 +8,11 @@ use Inertia\Inertia;
 use App\Models\DomainUrl;
 use App\Services\ActivityLogger;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\StoreDomainRequest;
+use App\Http\Requests\UpdateDomainRequest;
+use App\Http\Requests\SetAllDomainsRequest;
+use App\Http\Requests\SaveNotificationsRequest;
+use App\Http\Requests\SaveAdvancedSettingsRequest;
 
 class DomainController extends Controller
 {
@@ -18,7 +23,7 @@ class DomainController extends Controller
         $this->domainRepository = $domainRepository;
     }
 
-    public function index(Request $request, \App\Contracts\PaymentGatewayInterface $gateway)
+    public function index(Request $request, \App\Services\SubscriptionService $subscriptionService)
     {
         $user = $request->user();
         $domains = $this->domainRepository->getAllForUser($user->id);
@@ -35,29 +40,7 @@ class DomainController extends Controller
             ? json_decode($user->advanced_settings, true) 
             : $user->advanced_settings;
 
-        $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
-        $planDetails = [
-            'name' => 'Free Trial',
-            'expiry' => $user->trial_ends_at ? $user->trial_ends_at->format('M d, Y') : 'N/A'
-        ];
-
-        if ($activeSubscription) {
-            $plansMap = [
-                env('RAZORPAY_PLAN_STARTER_MONTHLY') => 'Starter Monthly',
-                env('RAZORPAY_PLAN_STARTER_YEARLY') => 'Starter Yearly',
-                env('RAZORPAY_PLAN_PRO_MONTHLY') => 'Pro Monthly',
-                env('RAZORPAY_PLAN_PRO_YEARLY') => 'Pro Yearly',
-                env('RAZORPAY_PLAN_ENTERPRISE_MONTHLY') => 'Enterprise Monthly',
-                env('RAZORPAY_PLAN_ENTERPRISE_YEARLY') => 'Enterprise Yearly',
-            ];
-            $planDetails['name'] = $plansMap[$activeSubscription->plan_name] ?? 'Custom Plan';
-            try {
-                $rzpSub = $gateway->getSubscription($activeSubscription->razorpay_subscription_id);
-                if (isset($rzpSub['current_end'])) {
-                    $planDetails['expiry'] = date('M d, Y', $rzpSub['current_end']);
-                }
-            } catch (\Exception $e) {}
-        }
+        $planDetails = $subscriptionService->getBasicPlanDetails($user);
 
         return Inertia::render('Dashboard', [
             'domains' => $domains,
@@ -70,29 +53,13 @@ class DomainController extends Controller
 
 
 
-    public function store(Request $request)
+    public function store(StoreDomainRequest $request)
     {
         $user = $request->user();
         
         if ($user->domains()->count() >= $user->getMaxDomainsLimit()) {
             return back()->withErrors(['url' => 'You have reached the maximum number of domains allowed on your current plan. Please upgrade to add more.']);
         }
-
-        $request->merge(['url' => rtrim($request->url, '/')]);
-        
-        $request->validate([
-            'domain_name' => 'required|string|max:255',
-            'url' => [
-                'required',
-                'url',
-                'max:500',
-                Rule::unique('domain_urls')->where(function ($query) use ($request) {
-                    return $query->where('user_id', $request->user()->id);
-                })
-            ],
-        ], [
-            'url.unique' => 'You have already added this domain URL.'
-        ]);
 
         $this->domainRepository->save(
             $request->domain_name,
@@ -106,24 +73,8 @@ class DomainController extends Controller
         return back()->with('success', 'Domain added successfully.');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateDomainRequest $request, $id)
     {
-        $request->merge(['url' => rtrim($request->url, '/')]);
-        
-        $request->validate([
-            'domain_name' => 'required|string|max:255',
-            'url' => [
-                'required',
-                'url',
-                'max:500',
-                Rule::unique('domain_urls')->where(function ($query) use ($request) {
-                    return $query->where('user_id', $request->user()->id);
-                })->ignore($id)
-            ],
-            'status' => 'required|in:enabled,disabled'
-        ], [
-            'url.unique' => 'You have already added this domain URL.'
-        ]);
 
         $domain = DomainUrl::where('id', $id)->where('user_id', $request->user()->id)->first();
         $changes = [];
@@ -167,9 +118,8 @@ class DomainController extends Controller
         return back()->with('success', 'Domain deleted successfully.');
     }
 
-    public function setAll(Request $request)
+    public function setAll(SetAllDomainsRequest $request)
     {
-        $request->validate(['enabled' => 'required|boolean']);
         $status = $request->enabled ? 'enabled' : 'disabled';
         
         \App\Models\DomainUrl::where('user_id', $request->user()->id)
@@ -178,14 +128,8 @@ class DomainController extends Controller
         return back()->with('success', 'All domains updated successfully.');
     }
 
-    public function saveNotifications(Request $request)
+    public function saveNotifications(SaveNotificationsRequest $request)
     {
-        $request->validate([
-            'emails' => 'nullable|array',
-            'emails.*' => 'nullable|email',
-            'phones' => 'nullable|array',
-            'phones.*' => 'nullable|string'
-        ]);
 
         $validEmails = array_filter($request->emails ?: [], function($email) {
             return !empty(trim($email));
@@ -202,11 +146,8 @@ class DomainController extends Controller
 
         return back()->with('success', 'Preferences saved successfully.');
     }
-    public function saveAdvancedSettings(Request $request)
+    public function saveAdvancedSettings(SaveAdvancedSettingsRequest $request)
     {
-        $request->validate([
-            'settings' => 'required|array'
-        ]);
 
         $user = $request->user();
         $user->advanced_settings = json_encode($request->settings);

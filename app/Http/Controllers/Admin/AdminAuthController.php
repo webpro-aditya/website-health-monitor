@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\AdminLoginRequest;
 use Inertia\Inertia;
 
 class AdminAuthController extends Controller
@@ -17,12 +18,9 @@ class AdminAuthController extends Controller
         return Inertia::render('Admin/Login');
     }
 
-    public function login(Request $request)
+    public function login(AdminLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             if (Auth::user()->role === 'admin') {
