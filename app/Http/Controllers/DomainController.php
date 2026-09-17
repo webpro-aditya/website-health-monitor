@@ -58,8 +58,13 @@ class DomainController extends Controller
         })->sortByDesc('id')->values();
         
         $alertEmails = $user->notification_emails ?: [];
+        if (is_string($alertEmails)) $alertEmails = explode(',', $alertEmails);
+        
         $alertPhones = $user->notification_phones ?: [];
+        if (is_string($alertPhones)) $alertPhones = explode(',', $alertPhones);
+        
         $advancedSettings = $user->advanced_settings ?: [];
+        if (is_string($advancedSettings)) $advancedSettings = json_decode($advancedSettings, true) ?: [];
 
         $planDetails = $subscriptionService->getBasicPlanDetails($user);
 

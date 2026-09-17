@@ -250,8 +250,10 @@ export default function AdminDashboard({ totalUsers, totalDomains, users, emailC
             label: 'Avg Response Time (ms)',
             data: analytics.hourlyData.map(d => d.response_time),
             borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
             borderWidth: 2,
-            tension: 0.3
+            fill: true,
+            tension: 0.4
           }]
         },
         options: {
@@ -487,7 +489,7 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
         
         {modalState.isOpen && (
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={closeModal}>
-                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', width: '90%', maxWidth: '800px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
+                <div className="whm-glass" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', width: '90%', maxWidth: '800px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3 style={{ fontSize: '18px', fontWeight: '700' }}>{modalState.title}</h3>
                         <button onClick={closeModal} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: '28px', lineHeight: '20px' }}>&times;</button>
@@ -566,7 +568,7 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
 
         {/* STATS */}
         <div className="whm-stats-grid">
-          <div className="whm-stat-card" style={{ borderTop: '2px solid var(--accent)' }}>
+          <div className="whm-stat-card whm-card-hover whm-glass" style={{ borderTop: '2px solid var(--accent)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div className="whm-stat-icon" style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>
                 <IconUsers size={24} />
@@ -578,7 +580,7 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
             </div>
           </div>
           
-          <div className="whm-stat-card" style={{ borderTop: '2px solid var(--accent-secondary)' }}>
+          <div className="whm-stat-card whm-card-hover whm-glass" style={{ borderTop: '2px solid var(--accent-secondary)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div className="whm-stat-icon" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--accent-secondary)' }}>
                 <IconGlobe size={24} />
@@ -590,7 +592,7 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
             </div>
           </div>
           
-          <div className="whm-stat-card" style={{ borderTop: '2px solid var(--success)' }}>
+          <div className="whm-stat-card whm-card-hover whm-glass" style={{ borderTop: '2px solid var(--success)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div className="whm-stat-icon" style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)' }}>
                 <IconActivity size={24} />
@@ -602,7 +604,7 @@ body { background: var(--bg-gradient); color: var(--text-primary); min-height: 1
             </div>
           </div>
 
-          <div className="whm-stat-card" style={{ borderTop: '2px solid var(--warning)' }}>
+          <div className="whm-stat-card whm-card-hover whm-glass" style={{ borderTop: '2px solid var(--warning)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div className="whm-stat-icon" style={{ background: 'rgba(245, 158, 11, 0.2)', color: 'var(--warning)' }}>
                 <IconBell size={24} />

@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ════════════════════════════════════════════════════
+   Global UI/UX Enhancements
+   ════════════════════════════════════════════════════ */
+
+.whm-glass {
+    background: var(--surface, rgba(15, 23, 42, 0.4)) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+    box-shadow: var(--shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.whm-magnetic-hover {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+}
+.whm-magnetic-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(6, 182, 212, 0.3);
+}
+
+.whm-card-hover {
+    transition: all 0.3s ease;
+}
+.whm-card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: rgba(6, 182, 212, 0.3) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 20px rgba(6, 182, 212, 0.1);
+}

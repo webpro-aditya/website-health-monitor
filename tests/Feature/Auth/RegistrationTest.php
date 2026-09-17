@@ -26,6 +26,6 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('payment.checkout', ['plan' => 'pro_monthly'], false));
     }
 }

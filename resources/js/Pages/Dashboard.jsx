@@ -109,7 +109,7 @@ function Section({ title, icon, open, onToggle, children, badge, dragHandleProps
         >
           <IconGripVertical size={18} />
         </div>
-        <button className="whm-section-header-btn" onClick={onToggle} type="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', padding: '0', cursor: 'pointer', textAlign: 'left', outline: 'none' }}>
+        <button className="whm-section-header-btn" onClick={onToggle} type="button" aria-label="Toggle section" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', padding: '0', cursor: 'pointer', textAlign: 'left', outline: 'none' }}>
           <div className="whm-section-left" style={{ display: 'flex', alignItems: 'center' }}>
             <span className="whm-section-icon">{icon}</span>
             <h2 className="whm-section-title">{title}</h2>
@@ -346,10 +346,11 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
       confirmButtonText: 'Yes, delete it',
       background: dark ? '#0c0d1a' : '#ffffff',
       color: dark ? '#eef2ff' : '#0f172a',
+      target: '.whm-root',
       customClass: {
-        popup: 'whm-swal-popup',
-        confirmButton: 'whm-btn whm-btn-primary',
-        cancelButton: 'whm-btn whm-btn-ghost'
+        popup: 'whm-glass',
+        confirmButton: 'whm-btn whm-btn-primary whm-magnetic-hover',
+        cancelButton: 'whm-btn whm-btn-ghost whm-magnetic-hover'
       }
     }).then((result) => {
       if (result.isConfirmed) {
@@ -370,9 +371,9 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
       background: dark ? '#0c0d1a' : '#ffffff',
       color: dark ? '#eef2ff' : '#0f172a',
       customClass: {
-        popup: 'whm-swal-popup',
-        confirmButton: 'whm-btn whm-btn-primary',
-        cancelButton: 'whm-btn whm-btn-ghost'
+        popup: 'whm-glass',
+        confirmButton: 'whm-btn whm-btn-primary whm-magnetic-hover',
+        cancelButton: 'whm-btn whm-btn-ghost whm-magnetic-hover'
       }
     }).then((result) => {
       if (result.isConfirmed) {
@@ -395,9 +396,9 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
       background: dark ? '#0c0d1a' : '#ffffff',
       color: dark ? '#eef2ff' : '#0f172a',
       customClass: {
-        popup: 'whm-swal-popup',
-        confirmButton: 'whm-btn whm-btn-primary',
-        cancelButton: 'whm-btn whm-btn-ghost'
+        popup: 'whm-glass',
+        confirmButton: 'whm-btn whm-btn-primary whm-magnetic-hover',
+        cancelButton: 'whm-btn whm-btn-ghost whm-magnetic-hover'
       }
     }).then((result) => {
       if (result.isConfirmed) {
@@ -464,7 +465,7 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
         {/* ── MODAL ── */}
         {isModalOpen && (
           <div className="whm-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
-            <div className="whm-modal">
+            <div className="whm-modal whm-glass">
               <div className="whm-modal-header">
                 <h3 className="whm-modal-title">{isEdit ? 'Edit Domain' : 'Add New Domain'}</h3>
                 <button className="whm-modal-close" onClick={() => setIsModalOpen(false)}><IconX size={16} /></button>
@@ -482,7 +483,7 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
                 </div>
                 <div className="whm-modal-actions">
                   <button type="button" className="whm-btn whm-btn-ghost" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                  <button type="submit" className="whm-btn whm-btn-primary" disabled={processing}>
+                  <button type="submit" className="whm-btn whm-btn-primary whm-magnetic-hover" disabled={processing}>
                     {processing ? 'Saving...' : 'Save Domain'}
                   </button>
                 </div>
@@ -529,7 +530,7 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
               <button className="whm-btn whm-btn-icon" onClick={() => setDark(!dark)} title={dark ? 'Switch to Light' : 'Switch to Dark'}>
                 {dark ? <IconSun size={18} /> : <IconMoon size={18} />}
               </button>
-              <button className="whm-btn whm-btn-primary" onClick={openAddModal}>
+              <button className="whm-btn whm-btn-primary whm-magnetic-hover" onClick={openAddModal}>
                 <IconPlus size={16} /> Add Domain
               </button>
 
@@ -546,7 +547,7 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
           {/* ── STAT CARDS ── */}
           <div className="whm-stats-grid">
             {statCards.map((s, i) => (
-              <div className="whm-stat-card" key={i} style={{ borderLeft: `3px solid ${s.color}`, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="whm-stat-card whm-card-hover" key={i} style={{ borderLeft: `3px solid ${s.color}`, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div className="whm-stat-icon" style={{ background: `${s.color}22`, color: s.color, width: '36px', height: '36px', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {s.icon}
@@ -646,7 +647,7 @@ export default function Dashboard({ domains, initialAlertEmails = [], initialAle
                                         <div className="whm-empty-icon"><IconGlobe size={40} /></div>
                                         <p className="whm-empty-title">No domains yet</p>
                                         <p className="whm-empty-desc">Add your first domain to start monitoring its health.</p>
-                                        <button className="whm-btn whm-btn-primary" onClick={openAddModal} style={{ marginTop: '12px' }}>
+                                        <button className="whm-btn whm-btn-primary whm-magnetic-hover" onClick={openAddModal} style={{ marginTop: '12px' }}>
                                           <IconPlus size={16} /> Add Your First Domain
                                         </button>
                                       </div>
@@ -781,7 +782,7 @@ const DASHBOARD_CSS = `
 
 /* ── Design Tokens ── */
 .whm-root {
-  --bg-primary: #0f172a;
+  --bg-primary: radial-gradient(circle at top, #1e1b4b, #0f172a 40%, #020617);
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
   --surface: rgba(255,255,255,0.03);
@@ -816,37 +817,20 @@ const DASHBOARD_CSS = `
 .whm-root[data-theme="light"] {
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
-  --surface: #ffffff;
-  --surface-hover: #f8fafc;
-  --surface-active: #f1f5f9;
-  --surface-elevated: #ffffff;
-  --border: #e2e8f0;
-  --border-hover: #cbd5e1;
-  --border-accent: rgba(6,182,212,0.3);
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #64748b;
-  --accent: #0891b2;
-  --accent-light: #06b6d4;
-  --accent-glow: rgba(8,145,178,0.1);
-  --accent-glow-strong: rgba(8,145,178,0.2);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
-}
-
-.whm-root[data-theme="light"] {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
   --surface: rgba(255,255,255,0.85);
   --surface-hover: rgba(255,255,255,0.95);
   --surface-active: rgba(255,255,255,1);
-  --border: rgba(99,102,241,0.1);
-  --border-hover: rgba(99,102,241,0.2);
+  --surface-elevated: #ffffff;
+  --border: rgba(99,102,241,0.15);
+  --border-hover: rgba(99,102,241,0.3);
+  --border-accent: rgba(6,182,212,0.3);
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
-  --accent-glow: rgba(99,102,241,0.08);
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --accent: #0891b2;
+  --accent-light: #06b6d4;
+  --accent-glow: rgba(99,102,241,0.1);
+  --accent-glow-strong: rgba(99,102,241,0.2);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
   --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
