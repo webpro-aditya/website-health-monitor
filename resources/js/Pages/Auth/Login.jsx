@@ -294,10 +294,10 @@ body{
                         <div className="divider"></div>
 
                         <div className="logos-row">
-                            <span>TECHCORP</span>
-                            <span>ACME INC</span>
-                            <span>CLOUDNET</span>
-                            <span>DATAFLOW</span>
+                            <span>NEXUS</span>
+                            <span>LUMINA</span>
+                            <span>SYNAPSE</span>
+                            <span>AURA</span>
                         </div>
                     </div>
                 </div>

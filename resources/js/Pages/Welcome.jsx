@@ -417,10 +417,10 @@ body::before {
       <footer className="footer">
         <div className="footer-title">Trusted by Engineering Teams At</div>
         <div className="logos-row">
-          <span>TECHCORP</span>
-          <span>ACME INC</span>
-          <span>CLOUDNET</span>
-          <span>DATAFLOW</span>
+          <span>NEXUS</span>
+          <span>LUMINA</span>
+          <span>SYNAPSE</span>
+          <span>AURA</span>
           <span>APEX</span>
         </div>
       </footer>
